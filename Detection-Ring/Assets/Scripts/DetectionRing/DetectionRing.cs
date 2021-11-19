@@ -5,38 +5,40 @@ using UnityEditor;
 [RequireComponent(typeof(LineRenderer))]
 public class DetectionRing : MonoBehaviour
 {
+    [SerializeField] DetectionSystem _detectionSystem;
     [SerializeField] int _nodeCount = 180;
-    [SerializeField] float _detectionRadius = 20f;
-    [SerializeField] float _ringRadius = 1.2f;
-    [SerializeField] LayerMask _targetLayerMask;
-    [SerializeField] float _frequency;
-    [SerializeField] float _amplitude;
-    [SerializeField] DetectionRingHeightMap _heightMap = new DetectionRingHeightMap();
+    [SerializeField] float _ringRadius = 2f;
+    [SerializeField] float _bumbRadius = 0.05f;
+    [SerializeField] float _maxDistance = 20f;
+    [SerializeField] float _frequency = 0.2f;
+    [SerializeField] float _amplitude = 0.1f;
+    
+    [SerializeField] AnimationCurve _diffuseCurve;
+    [SerializeField] AnimationCurve _distatanceDropOffCurve;
+    [SerializeField] AnimationCurve _realValue;
 
     private LineRenderer _lineRederer;
-    private Collider[] _colliders;
+    private SortedList<DetectionKey> _detectionKeys;
 
     private void Awake()
     {
         _lineRederer = GetComponent<LineRenderer>();
         _lineRederer.loop = true;
 
+        SetDetectionSystem(_detectionSystem);
         SetNodeCount(_nodeCount);
     }
 
-    public void Update()
+    public void LateUpdate()
     {
-        _colliders = Physics.OverlapSphere(transform.position, _detectionRadius, _targetLayerMask);
-        _heightMap.Clear();
-
-        for (int i = 0; i < _colliders.Length; i++)
-        {
-            float direction = CalucateAngle(transform.position, _colliders[i].transform.position) / 360f;
-            float distance = Vector3.Distance(transform.position, _colliders[i].transform.position);
-            _heightMap.Add(direction, distance);
-        }
-
         DrawRing();
+    }
+
+    public void SetDetectionSystem(DetectionSystem detectionSystem)
+    {
+        _detectionSystem = detectionSystem;
+        _detectionKeys = detectionSystem.DetectionKeys;
+        _maxDistance = _detectionSystem.DetectionRadius;
     }
 
     public void SetNodeCount(int value)
@@ -57,13 +59,33 @@ public class DetectionRing : MonoBehaviour
 
             float x = Mathf.Sin(angle * Mathf.PI / 180) * _ringRadius;
             float z = Mathf.Cos(angle * Mathf.PI / 180) * _ringRadius;
-            float y = _heightMap.Evauate(angleDec) + GenerateNoise(x,z);
+            float y = Evaluate(angleDec) + GenerateNoise(x,z);
 
             nodePositions[i] = transform.position + new Vector3(x,y,z);
         }
 
         _lineRederer.SetPositions(nodePositions);
     }
+
+    public float Evaluate(float t)
+    {
+        float height = 0f;
+
+        for (int i = 0; i < _detectionKeys.Count; i++)
+        {
+            float directionDistance = WrapShortistDistance(t, _detectionKeys[i].Direction, 1f);
+
+            if (directionDistance > _bumbRadius)
+                continue;
+
+            float h = _diffuseCurve.Evaluate(directionDistance / _bumbRadius);
+            h *= _distatanceDropOffCurve.Evaluate(_detectionKeys[i].Distance / _maxDistance);
+            height += h;
+        }
+
+        return height;
+    }
+
 
     public float GenerateNoise(float x, float y)
     {
@@ -85,4 +107,21 @@ public class DetectionRing : MonoBehaviour
     {
         return ((i % n) + n) % n;
     }
+
+    public static float Wrap(float i, float n)
+    {
+        return ((i % n) + n) % n;
+    }
+
+    public static float WrapShortistDistance(float a, float b, float n)
+    {
+        a = Wrap(a, n);
+        b = Wrap(b, n);
+        float max = Mathf.Max(a, b);
+        float min = Mathf.Min(a, b);
+        float dist = max - min;
+
+        return Mathf.Min(dist, n - dist);
+    }
+
 }

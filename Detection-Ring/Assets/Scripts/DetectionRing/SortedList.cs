@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class SortedList<T> where T : IComparable<T>
 {
     public List<T> Items { get; private set; } = new List<T>();
-    public void Clear() => Items.Clear();
+    
     public T this[int index]
     { 
         get 
@@ -12,6 +12,9 @@ public class SortedList<T> where T : IComparable<T>
             return Items[index]; 
         } 
     }
+
+    public void Clear() => Items.Clear();
+    public int Count => Items.Count;
 
     public void Add(T newItem)
     {
