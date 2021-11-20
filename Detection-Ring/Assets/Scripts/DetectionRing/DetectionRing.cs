@@ -8,14 +8,14 @@ public class DetectionRing : MonoBehaviour
     [SerializeField] DetectionSystem _detectionSystem;
     [SerializeField] int _nodeCount = 180;
     [SerializeField] float _ringRadius = 2f;
+    [SerializeField] float _amplitude = 1f;
     [SerializeField] float _bumbRadius = 0.05f;
     [SerializeField] float _maxDistance = 20f;
-    [SerializeField] float _frequency = 0.2f;
-    [SerializeField] float _amplitude = 0.1f;
+    [SerializeField] float _noiseFrequency = 0.2f;
+    [SerializeField] float _noiseAmplitude = 0.1f;
     
     [SerializeField] AnimationCurve _diffuseCurve;
     [SerializeField] AnimationCurve _distatanceDropOffCurve;
-    [SerializeField] AnimationCurve _realValue;
 
     private LineRenderer _lineRederer;
     private SortedList<DetectionKey> _detectionKeys;
@@ -51,48 +51,63 @@ public class DetectionRing : MonoBehaviour
     {
         var nodePositions = new Vector3[_lineRederer.positionCount];
         var anglePerNode = 360f / _lineRederer.positionCount;
+        var gradent = EvaluateArray(_lineRederer.positionCount);
 
         for (int i = 0; i < _lineRederer.positionCount; i++)
         {
             float angle = anglePerNode * i;
-            float angleDec = angle / 360f;
 
             float x = Mathf.Sin(angle * Mathf.PI / 180) * _ringRadius;
             float z = Mathf.Cos(angle * Mathf.PI / 180) * _ringRadius;
-            float y = Evaluate(angleDec) + GenerateNoise(x,z);
+            float y = (gradent[i] * _amplitude) + GenerateNoise(x, z);
 
-            nodePositions[i] = transform.position + new Vector3(x,y,z);
+            nodePositions[i] = transform.position + new Vector3(x, y, z);
         }
 
         _lineRederer.SetPositions(nodePositions);
     }
 
-    public float Evaluate(float t)
+    public float[] EvaluateArray(int length)
     {
-        float height = 0f;
+        float[] result = new float[length];
+        MinMaxf minMaxf = new MinMaxf(0f, 1f);
+
+        int elementsPerDeffuse = Mathf.RoundToInt(length * _bumbRadius);
+        float anglePerElement = 1f / length;
 
         for (int i = 0; i < _detectionKeys.Count; i++)
         {
-            float directionDistance = WrapShortistDistance(t, _detectionKeys[i].Direction, 1f);
+            int closest = Mathf.RoundToInt(length * _detectionKeys[i].Direction);
 
-            if (directionDistance > _bumbRadius)
-                continue;
+            for (int j = -elementsPerDeffuse; j < elementsPerDeffuse; j++)
+            {
+                int index = Wrap(closest + j, length);
+                float currentAngle = anglePerElement * index;
+                float directionDistance = WrapShortistDistance(currentAngle, _detectionKeys[i].Direction, 1f);
 
-            float h = _diffuseCurve.Evaluate(directionDistance / _bumbRadius);
-            h *= _distatanceDropOffCurve.Evaluate(_detectionKeys[i].Distance / _maxDistance);
-            height += h;
+                float height = _diffuseCurve.Evaluate(directionDistance / _bumbRadius);
+                height *= _distatanceDropOffCurve.Evaluate(_detectionKeys[i].Distance / _maxDistance);
+                result[index] += height;
+                minMaxf.Expand(result[index]);
+            }
         }
 
-        return height;
-    }
+        float scale = 1 / minMaxf.GetRange();
 
+        for (int i = 0; i < length; i++)
+        {
+            result[i] *= scale;
+        }
+
+        return result;
+    }
 
     public float GenerateNoise(float x, float y)
     {
-        x = (x * _amplitude) + Time.time;
-        y = (y * _amplitude) + Time.time;
+        x = (x * _noiseAmplitude) + Time.time;
+        y = (y * _noiseAmplitude) + Time.time;
 
-        return Mathf.PerlinNoise(x, y) * _frequency;
+        return Mathf.PerlinNoise(x, y) * _noiseFrequency;
     }
 
     public static float CalucateAngle(Vector3 to, Vector3 from)
@@ -123,5 +138,4 @@ public class DetectionRing : MonoBehaviour
 
         return Mathf.Min(dist, n - dist);
     }
-
 }
