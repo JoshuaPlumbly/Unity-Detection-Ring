@@ -5,10 +5,12 @@ using UnityEngine;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] private float _normalMoveSpeed;
+    [SerializeField] private float _normalMoveSpeed = 4f;
+    [SerializeField] private float _weight = 9.8f;
 
     CharacterController _character;
     Transform _camera;
+    Vector3 _velocity = Vector3.zero;
 
     private void Awake()
     {
@@ -18,20 +20,32 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
+        ComputeWalkingMovement();
+        ComputeGravity();
 
-        Move(new Vector2(h, v));
+        _character.Move(_velocity);
+        _velocity = Vector3.zero;
     }
 
-    private void Move(Vector2 direction)
+    private void ComputeWalkingMovement()
     {
-        var movement = _camera.forward * direction.y;
-        movement += _camera.right * direction.x;
-        movement.Normalize();
+        float v = Input.GetAxis("Vertical");
+        float h = Input.GetAxis("Horizontal");
+
+        var movement = _camera.forward * v;
+        movement += _camera.right * h;
         movement.y = 0;
+        movement.Normalize();
         movement *= _normalMoveSpeed * Time.deltaTime;
 
-        _character.Move(movement);
+        _velocity += movement;
+    }
+
+    private void ComputeGravity()
+    {
+        if (_character.isGrounded)
+            _velocity.y = 0f;
+
+        _velocity.y -= _weight * Time.deltaTime;
     }
 }
