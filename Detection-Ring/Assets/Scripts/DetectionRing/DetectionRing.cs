@@ -6,7 +6,7 @@ using UnityEditor;
 public class DetectionRing : MonoBehaviour
 {
     [SerializeField] DetectionSystem _detectionSystem;
-    [SerializeField] int _nodeCount = 180;
+    [SerializeField] int _ringPositionCount = 180;
     [SerializeField] float _ringRadius = 2f;
     [SerializeField] float _amplitude = 1f;
     [SerializeField] float _bumbRadius = 0.05f;
@@ -20,13 +20,15 @@ public class DetectionRing : MonoBehaviour
     private LineRenderer _lineRederer;
     private SortedList<DetectionKey> _detectionKeys;
 
+    private Vector3[] _flattedRingPositions;
+
     private void Awake()
     {
         _lineRederer = GetComponent<LineRenderer>();
         _lineRederer.loop = true;
 
         SetDetectionSystem(_detectionSystem);
-        SetNodeCount(_nodeCount);
+        SetRingPositionCount(_ringPositionCount);
     }
 
     public void LateUpdate()
@@ -41,30 +43,43 @@ public class DetectionRing : MonoBehaviour
         _maxDistance = _detectionSystem.DetectionRadius;
     }
 
-    public void SetNodeCount(int value)
+    public void SetRingPositionCount(int positionCount)
     {
-        _nodeCount = value;
-        _lineRederer.positionCount = value;
+        _ringPositionCount = positionCount;
+        _lineRederer.positionCount = positionCount;
+        _flattedRingPositions = new Vector3[positionCount];
+
+        var anglePerNode = 360f / _lineRederer.positionCount;
+
+        for (int i = 0; i < _flattedRingPositions.Length; i++)
+        {
+            float angle = anglePerNode * i;
+            float x = Mathf.Sin(angle * Mathf.PI / 180) * _ringRadius;
+            float z = Mathf.Cos(angle * Mathf.PI / 180) * _ringRadius;
+
+            _flattedRingPositions[i] = new Vector3(x, 0f, z);
+        }
     }
 
     public void DrawRing()
     {
-        var nodePositions = new Vector3[_lineRederer.positionCount];
+        _lineRederer.positionCount = _flattedRingPositions.Length;
+
         var anglePerNode = 360f / _lineRederer.positionCount;
-        var gradent = EvaluateArray(_lineRederer.positionCount);
+        var gradent = EvaluateArray(_flattedRingPositions.Length);
+        Vector3[] ringPositions = new Vector3[_flattedRingPositions.Length];
 
-        for (int i = 0; i < _lineRederer.positionCount; i++)
+        for (int i = 0; i < _flattedRingPositions.Length; i++)
         {
-            float angle = anglePerNode * i;
+            var vector = _flattedRingPositions[i];
+            vector.y = gradent[i];
+            
+            vector += Vector3.up * GenerateNoise(vector.x, vector.z) * _noiseAmplitude;
 
-            float x = Mathf.Sin(angle * Mathf.PI / 180) * _ringRadius;
-            float z = Mathf.Cos(angle * Mathf.PI / 180) * _ringRadius;
-            float y = (gradent[i] * _amplitude) + GenerateNoise(x, z);
-
-            nodePositions[i] = transform.position + new Vector3(x, y, z);
+            ringPositions[i] = transform.position + vector;
         }
 
-        _lineRederer.SetPositions(nodePositions);
+        _lineRederer.SetPositions(ringPositions);
     }
 
     public float[] EvaluateArray(int length)
@@ -92,7 +107,7 @@ public class DetectionRing : MonoBehaviour
             }
         }
 
-        float scale = 1 / minMaxf.GetRange();
+        float scale = 1f / minMaxf.GetRange();
 
         for (int i = 0; i < length; i++)
         {

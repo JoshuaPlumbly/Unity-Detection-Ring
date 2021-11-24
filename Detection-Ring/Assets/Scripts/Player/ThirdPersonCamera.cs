@@ -22,7 +22,6 @@ public class ThirdPersonCamera : MonoBehaviour
 
     void Start()
     {
-
         _pitch = _pitchTr.rotation.eulerAngles.x;
         _yaw = _yawTr.rotation.eulerAngles.y;
     }
@@ -34,6 +33,9 @@ public class ThirdPersonCamera : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (_target == null)
+            return;
+
         CameraRotation();
         CameraTranslate();
     }
