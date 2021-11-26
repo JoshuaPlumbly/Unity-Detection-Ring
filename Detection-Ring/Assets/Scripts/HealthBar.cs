@@ -13,6 +13,7 @@ public class HealthBar : MonoBehaviour
     {
         _image = GetComponent<Image>();
         _health.OnTakeDamage += UpdateHealth;
+        UpdateHealth();
     }
 
     private void UpdateHealth() {

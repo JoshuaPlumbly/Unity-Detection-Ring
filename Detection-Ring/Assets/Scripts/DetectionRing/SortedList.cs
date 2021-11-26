@@ -14,6 +14,7 @@ public class SortedList<T> where T : IComparable<T>
     }
 
     public void Clear() => Items.Clear();
+    public T[] ToArray() => Items.ToArray();
     public int Count => Items.Count;
 
     public void Add(T newItem)

@@ -2,11 +2,15 @@ using System.Collections;
 using UnityEngine;
 using UnityEditor;
 
-[RequireComponent(typeof(LineRenderer))]
+[RequireComponent(typeof(LineRenderer), typeof(ProximityDetection))]
 public class DetectionRing : MonoBehaviour
 {
-    [SerializeField] DetectionSystem _detectionSystem;
+    [SerializeField] ProximityDetection _detectionSystem;
+    [SerializeField] ResourceTracker _battery= new ResourceTracker(100f,100f);
+    [SerializeField] float _batteryLossPerSec;
+    [SerializeField] bool _on;
     [SerializeField] int _ringPositionCount = 180;
+    [SerializeField] float _lerpSpeed = 5f;
     [SerializeField] float _ringRadius = 2f;
     [SerializeField] float _amplitude = 1f;
     [SerializeField] float _bumbRadius = 0.05f;
@@ -20,23 +24,59 @@ public class DetectionRing : MonoBehaviour
     private LineRenderer _lineRederer;
     private SortedList<DetectionKey> _detectionKeys;
 
-    private Vector3[] _flattedRingPositions;
+    private Vector3[] _ringPositions;
 
     private void Awake()
     {
         _lineRederer = GetComponent<LineRenderer>();
         _lineRederer.loop = true;
 
-        SetDetectionSystem(_detectionSystem);
+        SetDetectionSystem(GetComponent<ProximityDetection>());
         SetRingPositionCount(_ringPositionCount);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            if (_on)
+                TurnOff();
+            else
+                TurnOn();
+        }
+
+        if (!_on || !_battery.TryToUse(_batteryLossPerSec * Time.deltaTime))
+            TurnOff();
+    }
+
+    public void TurnOff()
+    {
+        _on = false;
+        _detectionSystem.enabled = false;
+        _lineRederer.enabled = false;
+
+        for (int i = 0; i < _ringPositions.Length; i++)
+        {
+            _ringPositions[i].y = 0f;
+        }
+    }
+
+    public void TurnOn()
+    {
+        _on = true;
+        _detectionSystem.enabled = true;
+        _lineRederer.enabled = true;
     }
 
     public void LateUpdate()
     {
+        if (!_on)
+            return;
+
         DrawRing();
     }
 
-    public void SetDetectionSystem(DetectionSystem detectionSystem)
+    public void SetDetectionSystem(ProximityDetection detectionSystem)
     {
         _detectionSystem = detectionSystem;
         _detectionKeys = detectionSystem.DetectionKeys;
@@ -47,36 +87,36 @@ public class DetectionRing : MonoBehaviour
     {
         _ringPositionCount = positionCount;
         _lineRederer.positionCount = positionCount;
-        _flattedRingPositions = new Vector3[positionCount];
+        _ringPositions = new Vector3[positionCount];
 
         var anglePerNode = 360f / _lineRederer.positionCount;
 
-        for (int i = 0; i < _flattedRingPositions.Length; i++)
+        for (int i = 0; i < _ringPositions.Length; i++)
         {
             float angle = anglePerNode * i;
             float x = Mathf.Sin(angle * Mathf.PI / 180) * _ringRadius;
             float z = Mathf.Cos(angle * Mathf.PI / 180) * _ringRadius;
 
-            _flattedRingPositions[i] = new Vector3(x, 0f, z);
+            _ringPositions[i] = new Vector3(x, 0f, z);
         }
     }
 
     public void DrawRing()
     {
-        _lineRederer.positionCount = _flattedRingPositions.Length;
+        _lineRederer.positionCount = _ringPositions.Length;
 
         var anglePerNode = 360f / _lineRederer.positionCount;
-        var gradent = EvaluateArray(_flattedRingPositions.Length);
-        Vector3[] ringPositions = new Vector3[_flattedRingPositions.Length];
+        var gradent = EvaluateArray(_ringPositions.Length);
+        var ringPositions = new Vector3[_ringPositions.Length];
 
-        for (int i = 0; i < _flattedRingPositions.Length; i++)
+        for (int i = 0; i < _ringPositions.Length; i++)
         {
-            var vector = _flattedRingPositions[i];
-            vector.y = gradent[i];
+            var targetHeight = gradent[i];
             
-            vector += Vector3.up * GenerateNoise(vector.x, vector.z) * _noiseAmplitude;
+            targetHeight += GenerateNoise(_ringPositions[i].x, _ringPositions[i].z) * _noiseAmplitude;
 
-            ringPositions[i] = transform.position + vector;
+            _ringPositions[i].y =  Mathf.Lerp(_ringPositions[i].y, targetHeight, _lerpSpeed * Time.deltaTime);
+            ringPositions[i] = _ringPositions[i] + transform.position;
         }
 
         _lineRederer.SetPositions(ringPositions);

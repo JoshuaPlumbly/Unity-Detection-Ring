@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class DetectionSystem : MonoBehaviour
+public class ProximityDetection : MonoBehaviour
 {
     [SerializeField] float _detectionRadius = 20f;
     [SerializeField] LayerMask _targetLayerMask;

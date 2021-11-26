@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
 public class LandMine : MonoBehaviour
 {
     [SerializeField] int _damage;
@@ -24,7 +23,7 @@ public class LandMine : MonoBehaviour
 
     private void Explode()
     {
-        Instantiate(_explosionEffect, transform.position, transform.rotation);
+        Instantiate(_explosionEffect, transform.position, Quaternion.LookRotation(Vector3.up));
         Destroy(gameObject);
     }
 }
