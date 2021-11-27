@@ -1,25 +1,20 @@
 ﻿using UnityEngine;
 
-public class ProximityDetection : MonoBehaviour
+public static class ProximityDetection
 {
-    [SerializeField] float _detectionRadius = 20f;
-    [SerializeField] LayerMask _targetLayerMask;
-
-    public Collider[] DetectedObjects { get; private set; }
-    public SortedList<DetectionKey> DetectionKeys { get; private set; } = new SortedList<DetectionKey>();
-    public float DetectionRadius => _detectionRadius;
-
-    public void Update()
+    public static DetectionKey[] SeachProximity(Vector3 origin, float radius, LayerMask layerMask)
     {
-        DetectedObjects = Physics.OverlapSphere(transform.position, _detectionRadius, _targetLayerMask);
-        DetectionKeys.Clear();
+        var detectedObjects = Physics.OverlapSphere(origin,radius,layerMask);
+        var sortedList = new SortedList<DetectionKey>();
 
-        for (int i = 0; i < DetectedObjects.Length; i++)
+        for (int i = 0; i < detectedObjects.Length; i++)
         {
-            float direction = CalucateAngle(transform.position, DetectedObjects[i].transform.position) / 360f;
-            float distance = Vector3.Distance(transform.position, DetectedObjects[i].transform.position);
-            DetectionKeys.Add(new DetectionKey(direction, distance));
+            float direction = CalucateAngle(origin, detectedObjects[i].transform.position) / 360f;
+            float distance = Vector3.Distance(origin, detectedObjects[i].transform.position);
+            sortedList.Add(new DetectionKey(direction, distance));
         }
+
+        return sortedList.ToArray();
     }
 
     public static float CalucateAngle(Vector3 to, Vector3 from)

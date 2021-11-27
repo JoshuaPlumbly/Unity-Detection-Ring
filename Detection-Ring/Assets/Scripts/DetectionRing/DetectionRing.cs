@@ -2,10 +2,10 @@ using System.Collections;
 using UnityEngine;
 using UnityEditor;
 
-[RequireComponent(typeof(LineRenderer), typeof(ProximityDetection))]
+[RequireComponent(typeof(LineRenderer), typeof(ProximityDetetor))]
 public class DetectionRing : MonoBehaviour
 {
-    [SerializeField] ProximityDetection _detectionSystem;
+    [SerializeField] ProximityDetetor _detectionSystem;
     [SerializeField] ResourceTracker _battery= new ResourceTracker(100f,100f);
     [SerializeField] float _batteryLossPerSec;
     [SerializeField] bool _on;
@@ -31,7 +31,7 @@ public class DetectionRing : MonoBehaviour
         _lineRederer = GetComponent<LineRenderer>();
         _lineRederer.loop = true;
 
-        SetDetectionSystem(GetComponent<ProximityDetection>());
+        SetDetectionSystem(GetComponent<ProximityDetetor>());
         SetRingPositionCount(_ringPositionCount);
     }
 
@@ -76,7 +76,7 @@ public class DetectionRing : MonoBehaviour
         DrawRing();
     }
 
-    public void SetDetectionSystem(ProximityDetection detectionSystem)
+    public void SetDetectionSystem(ProximityDetetor detectionSystem)
     {
         _detectionSystem = detectionSystem;
         _detectionKeys = detectionSystem.DetectionKeys;
