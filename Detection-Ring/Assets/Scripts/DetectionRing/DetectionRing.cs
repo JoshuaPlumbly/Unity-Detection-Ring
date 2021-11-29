@@ -1,125 +1,83 @@
 using System.Collections;
 using UnityEngine;
 using UnityEditor;
+using System;
 
-[RequireComponent(typeof(LineRenderer), typeof(ProximityDetetor))]
 public class DetectionRing : MonoBehaviour
 {
-    [SerializeField] ProximityDetetor _detectionSystem;
     [SerializeField] ResourceTracker _battery= new ResourceTracker(100f,100f);
     [SerializeField] float _batteryLossPerSec;
-    [SerializeField] bool _on;
+    [SerializeField] LayerMask _layerMask;
+    [SerializeField] bool _isActive;
     [SerializeField] int _ringPositionCount = 180;
-    [SerializeField] float _lerpSpeed = 5f;
-    [SerializeField] float _ringRadius = 2f;
     [SerializeField] float _amplitude = 1f;
     [SerializeField] float _bumbRadius = 0.05f;
     [SerializeField] float _maxDistance = 20f;
+    [SerializeField] float _noiseAmplitude = 0.2f;
     [SerializeField] float _noiseFrequency = 0.2f;
-    [SerializeField] float _noiseAmplitude = 0.1f;
-    
+
     [SerializeField] AnimationCurve _diffuseCurve;
     [SerializeField] AnimationCurve _distatanceDropOffCurve;
 
-    private LineRenderer _lineRederer;
-    private SortedList<DetectionKey> _detectionKeys;
-
     private Vector3[] _ringPositions;
+
+    public event Action<float[]> OnSegmentRepositioned;
+    public event Action<bool> OnActiveStateChanaged;
+
+    public int SegmentCount = 180;
+    const float doublePI = 6.28318530718f;
 
     private void Awake()
     {
-        _lineRederer = GetComponent<LineRenderer>();
-        _lineRederer.loop = true;
-
-        SetDetectionSystem(GetComponent<ProximityDetetor>());
-        SetRingPositionCount(_ringPositionCount);
+        _ringPositions = new Vector3[SegmentCount];
     }
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.T))
         {
-            if (_on)
-                TurnOff();
-            else
-                TurnOn();
+            SetActiveState(!_isActive);
         }
 
-        if (!_on || !_battery.TryToUse(_batteryLossPerSec * Time.deltaTime))
-            TurnOff();
+        if (!_isActive || !_battery.TryToUse(_batteryLossPerSec * Time.deltaTime))
+            SetActiveState(false);
     }
 
-    public void TurnOff()
+    public void SetActiveState(bool isActive)
     {
-        _on = false;
-        _detectionSystem.enabled = false;
-        _lineRederer.enabled = false;
-
-        for (int i = 0; i < _ringPositions.Length; i++)
-        {
-            _ringPositions[i].y = 0f;
-        }
-    }
-
-    public void TurnOn()
-    {
-        _on = true;
-        _detectionSystem.enabled = true;
-        _lineRederer.enabled = true;
+        _isActive = isActive;
+        OnActiveStateChanaged?.Invoke(isActive);
     }
 
     public void LateUpdate()
     {
-        if (!_on)
+        if (!_isActive)
             return;
 
-        DrawRing();
+        Draw();
     }
 
-    public void SetDetectionSystem(ProximityDetetor detectionSystem)
+    public void Draw()
     {
-        _detectionSystem = detectionSystem;
-        _detectionKeys = detectionSystem.DetectionKeys;
-        _maxDistance = _detectionSystem.DetectionRadius;
-    }
+        float[] heightArray = EvaluateArray(SegmentCount);
+        float radiusPerSegment = doublePI / SegmentCount;
 
-    public void SetRingPositionCount(int positionCount)
-    {
-        _ringPositionCount = positionCount;
-        _lineRederer.positionCount = positionCount;
-        _ringPositions = new Vector3[positionCount];
-
-        var anglePerNode = 360f / _lineRederer.positionCount;
-
-        for (int i = 0; i < _ringPositions.Length; i++)
+        for (int i = 0; i < SegmentCount; i++)
         {
-            float angle = anglePerNode * i;
-            float x = Mathf.Sin(angle * Mathf.PI / 180) * _ringRadius;
-            float z = Mathf.Cos(angle * Mathf.PI / 180) * _ringRadius;
-
-            _ringPositions[i] = new Vector3(x, 0f, z);
-        }
-    }
-
-    public void DrawRing()
-    {
-        _lineRederer.positionCount = _ringPositions.Length;
-
-        var anglePerNode = 360f / _lineRederer.positionCount;
-        var gradent = EvaluateArray(_ringPositions.Length);
-        var ringPositions = new Vector3[_ringPositions.Length];
-
-        for (int i = 0; i < _ringPositions.Length; i++)
-        {
-            var targetHeight = gradent[i];
-            
-            targetHeight += GenerateNoise(_ringPositions[i].x, _ringPositions[i].z) * _noiseAmplitude;
-
-            _ringPositions[i].y =  Mathf.Lerp(_ringPositions[i].y, targetHeight, _lerpSpeed * Time.deltaTime);
-            ringPositions[i] = _ringPositions[i] + transform.position;
+            heightArray[i] += GenerateNoise(radiusPerSegment * i);
         }
 
-        _lineRederer.SetPositions(ringPositions);
+        OnSegmentRepositioned(heightArray);
+    }
+
+    public float GenerateNoise(float a)
+    {
+        float xOff = Mathf.Cos(a) + 1f;
+        float yOff = Mathf.Sin(a) + 1f;
+        xOff = (xOff * _noiseFrequency) + Time.time;
+        yOff = (yOff * _noiseFrequency) + Time.time;
+
+        return Mathf.PerlinNoise(xOff, yOff) * _noiseAmplitude;
     }
 
     public float[] EvaluateArray(int length)
@@ -130,7 +88,9 @@ public class DetectionRing : MonoBehaviour
         int elementsPerDeffuse = Mathf.RoundToInt(length * _bumbRadius);
         float anglePerElement = 1f / length;
 
-        for (int i = 0; i < _detectionKeys.Count; i++)
+        DetectionKey[] _detectionKeys = ProximityDetection.SeachProximity(transform.position, _maxDistance, _layerMask);
+
+        for (int i = 0; i < _detectionKeys.Length; i++)
         {
             int closest = Mathf.RoundToInt(length * _detectionKeys[i].Direction);
 
@@ -138,7 +98,7 @@ public class DetectionRing : MonoBehaviour
             {
                 int index = Wrap(closest + j, length);
                 float currentAngle = anglePerElement * index;
-                float directionDistance = WrapShortistDistance(currentAngle, _detectionKeys[i].Direction, 1f);
+                float directionDistance = FindShortistDistanceInCircuit(currentAngle, _detectionKeys[i].Direction, 1f);
 
                 float height = _diffuseCurve.Evaluate(directionDistance / _bumbRadius);
                 height *= _distatanceDropOffCurve.Evaluate(_detectionKeys[i].Distance / _maxDistance);
@@ -157,22 +117,6 @@ public class DetectionRing : MonoBehaviour
         return result;
     }
 
-    public float GenerateNoise(float x, float y)
-    {
-        x = (x * _noiseAmplitude) + Time.time;
-        y = (y * _noiseAmplitude) + Time.time;
-
-        return Mathf.PerlinNoise(x, y) * _noiseFrequency;
-    }
-
-    public static float CalucateAngle(Vector3 to, Vector3 from)
-    {
-        float x = from.x - to.x;
-        float y = from.z - to.z;
-        float angle = Mathf.Atan2(x, y) * Mathf.Rad2Deg;
-        return Mathf.Sign(angle) < 0 ? 360f + angle : angle;
-    }
-
     public static int Wrap(int i, int n)
     {
         return ((i % n) + n) % n;
@@ -183,7 +127,7 @@ public class DetectionRing : MonoBehaviour
         return ((i % n) + n) % n;
     }
 
-    public static float WrapShortistDistance(float a, float b, float n)
+    public static float FindShortistDistanceInCircuit(float a, float b, float n)
     {
         a = Wrap(a, n);
         b = Wrap(b, n);

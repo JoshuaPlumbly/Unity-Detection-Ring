@@ -17,11 +17,16 @@ public class ThirdPersonCamera : MonoBehaviour
     [SerializeField] Transform _yawTr;
     [SerializeField] Transform _pitchTr;
 
-    float _yaw;
-    float _pitch;
+    private Camera _camera;
 
-    void Start()
+    private float _yaw;
+    private float _pitch;
+
+
+    void Awake()
     {
+        _camera = GetComponent<Camera>();
+
         _pitch = _pitchTr.rotation.eulerAngles.x;
         _yaw = _yawTr.rotation.eulerAngles.y;
     }
@@ -59,11 +64,32 @@ public class ThirdPersonCamera : MonoBehaviour
 
         Quaternion xAngle = Quaternion.Euler(_pitch, _yawTr.rotation.eulerAngles.y, _yawTr.rotation.eulerAngles.z);
         _pitchTr.rotation = Quaternion.Slerp(_pitchTr.rotation, xAngle, Time.deltaTime * _mouseRotAcceleration);
+
+        _target.localRotation = Quaternion.Euler(0f, _yaw, 0f);
     }
 
     void CameraTranslate()
     {
         _yawTr.transform.position = Vector3.Lerp(_yawTr.transform.position, _target.position, Time.deltaTime * _smoothSpeed);
         transform.localPosition = Vector3.Lerp(transform.localPosition, _offset, Time.deltaTime * 5);
+    }
+
+    private void OnDisable()
+    {
+        _camera.enabled = false;
+
+        if (_camera.GetComponent<AudioListener>() != null)
+            _camera.GetComponent<AudioListener>().enabled = false;
+    }
+
+    private void OnEnable()
+    {
+        _camera.enabled = true;
+
+        if (_camera.GetComponent<AudioListener>() != null)
+            _camera.GetComponent<AudioListener>().enabled = true;
+
+        _yaw = transform.eulerAngles.y;
+        _pitch = 0f;
     }
 }

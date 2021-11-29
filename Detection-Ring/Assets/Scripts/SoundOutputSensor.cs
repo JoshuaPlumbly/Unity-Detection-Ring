@@ -31,7 +31,6 @@ public class SoundOutputSensor : MonoBehaviour
         if (_lastBeep + rate > Time.time)
             return;
 
-        Debug.Log("Beep! " + rate);
         _lastBeep = Time.time;
         _audioSource.Play();
     }

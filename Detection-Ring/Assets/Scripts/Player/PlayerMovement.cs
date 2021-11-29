@@ -2,50 +2,37 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(CharacterController))]
+[RequireComponent(typeof(Rigidbody))]
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] private float _normalMoveSpeed = 4f;
-    [SerializeField] private float _weight = 9.8f;
+    [SerializeField] private float _nomalMoveSpeed = 6f;
 
-    CharacterController _character;
-    Transform _camera;
-    Vector3 _velocity = Vector3.zero;
+    private Vector3 _moveDirection;
+    private Rigidbody _rb;
 
-    private void Awake()
+    private void Start()
     {
-        _character = GetComponent<CharacterController>();
-        _camera = Camera.main.transform;
+        _rb = GetComponent<Rigidbody>();
+        _rb.freezeRotation = true;
+        _rb.interpolation = RigidbodyInterpolation.Interpolate;
+        _rb.drag = 6f;
     }
 
     private void Update()
     {
-        ComputeWalkingMovement();
-        ComputeGravity();
-
-        _character.Move(_velocity);
-        _velocity = Vector3.zero;
+        GetMovementDirection();
     }
 
-    private void ComputeWalkingMovement()
+    private void GetMovementDirection()
     {
-        float v = Input.GetAxis("Vertical");
-        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxisRaw("Vertical");
+        float h = Input.GetAxisRaw("Horizontal");
 
-        var movement = _camera.forward * v;
-        movement += _camera.right * h;
-        movement.y = 0;
-        movement.Normalize();
-        movement *= _normalMoveSpeed * Time.deltaTime;
-
-        _velocity += movement;
+        _moveDirection = transform.forward * v + transform.right * h;
     }
 
-    private void ComputeGravity()
+    private void LateUpdate()
     {
-        if (_character.isGrounded)
-            _velocity.y = 0f;
-
-        _velocity.y -= _weight * Time.deltaTime;
+        _rb.AddForce(_moveDirection.normalized * _nomalMoveSpeed, ForceMode.Acceleration);
     }
 }
