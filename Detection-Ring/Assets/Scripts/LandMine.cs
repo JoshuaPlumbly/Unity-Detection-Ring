@@ -19,7 +19,7 @@ public class LandMine : MonoBehaviour
 
         for (int i = 0; i < colliders.Length; i++)
         {
-            var health = colliders[i].GetComponent<Health>();
+            var health = colliders[i].GetComponentInParent<Health>();
 
             if (health == null)
                 continue;

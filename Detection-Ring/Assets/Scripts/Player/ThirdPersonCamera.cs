@@ -17,7 +17,8 @@ public class ThirdPersonCamera : MonoBehaviour
     [SerializeField] Transform _yawTr;
     [SerializeField] Transform _pitchTr;
 
-    private Camera _camera;
+    public Camera Camera { get; private set; }
+
 
     private float _yaw;
     private float _pitch;
@@ -25,7 +26,7 @@ public class ThirdPersonCamera : MonoBehaviour
 
     void Awake()
     {
-        _camera = GetComponent<Camera>();
+        Camera = GetComponent<Camera>();
 
         _pitch = _pitchTr.rotation.eulerAngles.x;
         _yaw = _yawTr.rotation.eulerAngles.y;
@@ -76,18 +77,18 @@ public class ThirdPersonCamera : MonoBehaviour
 
     private void OnDisable()
     {
-        _camera.enabled = false;
+        Camera.enabled = false;
 
-        if (_camera.GetComponent<AudioListener>() != null)
-            _camera.GetComponent<AudioListener>().enabled = false;
+        if (Camera.GetComponent<AudioListener>() != null)
+            Camera.GetComponent<AudioListener>().enabled = false;
     }
 
     private void OnEnable()
     {
-        _camera.enabled = true;
+        Camera.enabled = true;
 
-        if (_camera.GetComponent<AudioListener>() != null)
-            _camera.GetComponent<AudioListener>().enabled = true;
+        if (Camera.GetComponent<AudioListener>() != null)
+            Camera.GetComponent<AudioListener>().enabled = true;
 
         _yaw = transform.eulerAngles.y;
         _pitch = 0f;

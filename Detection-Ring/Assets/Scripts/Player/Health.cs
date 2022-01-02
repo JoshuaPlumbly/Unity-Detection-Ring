@@ -34,6 +34,7 @@ public class Health : MonoBehaviour
         if (_hitPoints <= 0)
         {
             Instantiate(_hitEffect, hitPoint, Quaternion.FromToRotation(Vector3.forward, hitDirection));
+            GetComponent<CameraSwitcher>().SwitchCamera(false);
             GameObject.Destroy(gameObject);
         }
     }

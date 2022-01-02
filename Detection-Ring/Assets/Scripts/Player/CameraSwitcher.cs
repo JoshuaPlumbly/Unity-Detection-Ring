@@ -4,10 +4,12 @@ using UnityEngine;
 
 public class CameraSwitcher : MonoBehaviour
 {
+    [SerializeField] private bool _inFirstPerson;
     [SerializeField] FirstPersonCamera _firstPersonCamera;
     [SerializeField] ThirdPersonCamera _thirdPersonCamera;
 
-    private bool _inFirstPerson;
+    public Camera CurrentCamera { get; private set; }
+    public Transform CurrentCameraTr { get; private set; }
 
     private void Start()
     {
@@ -28,6 +30,9 @@ public class CameraSwitcher : MonoBehaviour
         _inFirstPerson = firstPerson;
         _firstPersonCamera.enabled = firstPerson;
         _thirdPersonCamera.enabled = !firstPerson;
+
+        CurrentCamera = firstPerson ? _firstPersonCamera.Camera : _thirdPersonCamera.Camera;
+        CurrentCameraTr = CurrentCamera.transform;
     }
 
     private void Update()

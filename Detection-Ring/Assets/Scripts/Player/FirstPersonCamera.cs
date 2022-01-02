@@ -7,16 +7,16 @@ public class FirstPersonCamera : MonoBehaviour
     [SerializeField] private float sensitivityX = 1f;
     [SerializeField] private float sensitivityY = 1f;
 
-    Camera _camera;
+    public Camera Camera { get; private set; }
 
     float _pitch;
     float _yaw;
 
     private void Awake()
     {
-        _camera = GetComponentInChildren<Camera>();
+        Camera = GetComponentInChildren<Camera>();
 
-        if (_camera == null)
+        if (Camera == null)
             Debug.LogWarning(this.name + " should have a camera that is accessible with the GetComponentInChildren methord.");
     }
 
@@ -29,24 +29,24 @@ public class FirstPersonCamera : MonoBehaviour
         _pitch += mouseY * sensitivityY;
 
         _pitch = Mathf.Clamp(_pitch, -90f, 90f);
-        _camera.transform.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
+        Camera.transform.localRotation = Quaternion.Euler(_pitch, 0f, 0f);
         transform.localRotation = Quaternion.Euler(0f, _yaw, 0f);
     }
 
     private void OnDisable()
     {
-        _camera.enabled = false;
+        Camera.enabled = false;
 
-        if (_camera.GetComponent<AudioListener>() != null)
-            _camera.GetComponent<AudioListener>().enabled = false;
+        if (Camera.GetComponent<AudioListener>() != null)
+            Camera.GetComponent<AudioListener>().enabled = false;
     }
 
     private void OnEnable()
     {
-        _camera.enabled = true;
+        Camera.enabled = true;
 
-        if (_camera.GetComponent<AudioListener>() != null)
-            _camera.GetComponent<AudioListener>().enabled = true;
+        if (Camera.GetComponent<AudioListener>() != null)
+            Camera.GetComponent<AudioListener>().enabled = true;
 
         _yaw = transform.eulerAngles.y;
         _pitch = 0f;
