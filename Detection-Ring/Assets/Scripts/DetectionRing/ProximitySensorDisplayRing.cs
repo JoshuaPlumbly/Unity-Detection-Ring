@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(LineRenderer))]
-public class ThirdPersonDetectionRingDisplay : MonoBehaviour
+public class ProximitySensorDisplayRing : MonoBehaviour
 {
-    [SerializeField] private ProximitySensorB _proximityRing;
+    [SerializeField] private ProximitySensorB _proximitySensor;
     [SerializeField] private float _radius = 2f;
     [SerializeField] private float _heightScale = 0.8f;
     [SerializeField] private AnimationCurve _strengthToHeight = new AnimationCurve(new Keyframe(0f,0f), new Keyframe(1f,1f), new Keyframe(2f,1.5f), new Keyframe(5f, 2f));
@@ -18,22 +18,22 @@ public class ThirdPersonDetectionRingDisplay : MonoBehaviour
         _lineRenderer = GetComponent<LineRenderer>();
         _lineRenderer.loop = true;
 
-        if (_proximityRing == null)
+        if (_proximitySensor == null)
             Debug.LogWarning(this + " is missing a proximity refrence.");
 
-        UpdateAllPositions(_proximityRing.Nodes);
+        UpdateAllPositions(_proximitySensor.Nodes);
     }
 
     private void OnEnable()
     {
-        _proximityRing.OnSetActive += SetActiveState;
-        _proximityRing.OnNodesUpdated += UpdateYPositions;
+        _proximitySensor.OnSetActive += SetActiveState;
+        _proximitySensor.OnNodesUpdated += UpdateYPositions;
     }
 
     private void OnDisable()
     {
-        _proximityRing.OnSetActive -= SetActiveState;
-        _proximityRing.OnNodesUpdated -= UpdateYPositions;
+        _proximitySensor.OnSetActive -= SetActiveState;
+        _proximitySensor.OnNodesUpdated -= UpdateYPositions;
     }
 
     public void SetActiveState(bool isActive)
