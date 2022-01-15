@@ -13,6 +13,8 @@ public class ProximitySensorDisplayRing : MonoBehaviour
     private LineRenderer _lineRenderer;
     private Vector3[] _ringPositions;
 
+    public const float doublePI = (float)Mathf.PI * 2f;
+
     private void Awake()
     {
         _lineRenderer = GetComponent<LineRenderer>();
@@ -58,15 +60,17 @@ public class ProximitySensorDisplayRing : MonoBehaviour
         if (_ringPositions == null || _ringPositions.Length != nodes.Length)
             _ringPositions = new Vector3[nodes.Length];
 
-        float anglePerNode = 360f / nodes.Length;
         _lineRenderer.positionCount = nodes.Length;
 
         for (int i = 0; i < nodes.Length; i++)
         {
-            float angle = anglePerNode * i;
-            float x = Mathf.Sin(angle * Mathf.PI / 180f) * _radius;
+            float circumferenceProgress = (float)i / nodes.Length;
+            float currentRadian = circumferenceProgress * doublePI;
+
+            float x = Mathf.Sin(currentRadian) * _radius;
+            float z = Mathf.Cos(currentRadian) * _radius;
             float y = EvaluateYPosition(nodes[i]);
-            float z = Mathf.Cos(angle * Mathf.PI / 180f) * _radius;
+
             _ringPositions[i] = new Vector3(x, y, z);
         }
     }

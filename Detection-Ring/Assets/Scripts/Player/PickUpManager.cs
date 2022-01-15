@@ -6,13 +6,11 @@ using UnityEngine.UI;
 [RequireComponent(typeof(CameraSwitcher))]
 public class PickUpManager : MonoBehaviour
 {
-    [SerializeField] float _reach = 1f;
-    [SerializeField] float _threshold = 0.96f;
-    [SerializeField] Text text;
+    [SerializeField, Min(0)] float _reach = 1f;
+    [SerializeField, Range(0,360)] float _threshold = 30f;
+    [SerializeField] Text _displayText;
 
     private CameraSwitcher _cameraSwitcher;
-
-    private Interactable[] interactablesInRange;
 
     private void Awake()
     {
@@ -25,40 +23,41 @@ public class PickUpManager : MonoBehaviour
         Cursor.visible = false;
     }
 
-    public void Update()
+    private void Update()
     {
-        interactablesInRange = ComponetRetrieval.FromOverlapSphere<Interactable>(transform.position, _reach);
-
-        Camera cam = _cameraSwitcher.CurrentCamera;
-        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        Interactable interactable = GetClosestInteracableFromMouse(ray);
-        text.text = interactable == null ? "" : interactable.UseText;
+        Interactable interactable = FindInteractableBeingLookedAt();
+        _displayText.text = interactable == null ? "" : interactable.UseText;
 
         if (interactable != null && Input.GetKeyDown(KeyCode.E))
-        {
             interactable.Use();
-        }
     }
 
-    public Interactable GetClosestInteracableFromMouse(Ray ray)
+    public Interactable FindInteractableBeingLookedAt()
     {
-        Interactable selection = null;
+        Interactable nearestInteractable = null;
+        float nearestInteractableAngle = Mathf.Infinity;
 
-        Vector3 v1 = ray.direction.normalized;
-        float closest = 0f;
+        Vector3 playerLookDirection = _cameraSwitcher.CurrentCamera.ViewportPointToRay(new Vector3(Screen.width*0.5f, Screen.height *0.5f)).direction.normalized;
 
-        for (int i = 0; i < interactablesInRange.Length; i++)
+        Collider[] colliders = Physics.OverlapSphere(transform.position, _reach);
+
+        for (int i = 0; i < colliders.Length; i++)
         {
-            Vector3 v2 = Vector3.Normalize(interactablesInRange[i].transform.position - ray.origin);
-            float lookDecimal = Vector3.Dot(v1, v2);
+            Interactable interactable = colliders[i].GetComponent<Interactable>();
 
-            if (lookDecimal > _threshold && lookDecimal > closest)
+            if (interactable == null)
+                continue;
+
+            Vector3 playerToInteractableDirection = (_cameraSwitcher.CurrentCamera.transform.position - interactable.transform.position).normalized;
+            float playerToInteractableAngle = Vector3.Angle(playerToInteractableDirection, playerLookDirection);
+            
+            if (nearestInteractableAngle < playerToInteractableAngle)
             {
-                closest = lookDecimal;
-                selection = interactablesInRange[i];
+                nearestInteractableAngle = playerToInteractableAngle;
+                nearestInteractable = interactable;
             }
         }
 
-        return selection;
+        return nearestInteractableAngle < _threshold ? nearestInteractable : null;
     }
 }
