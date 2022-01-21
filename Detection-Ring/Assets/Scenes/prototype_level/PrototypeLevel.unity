@@ -535,7 +535,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ac1423dbf1d4ab4fb390247b2642ee0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _inFirstPerson: 0
+  _inFirstPerson: 1
   _firstPersonCamera: {fileID: 169767430}
   _thirdPersonCamera: {fileID: 963194229}
 --- !u!114 &169767435
@@ -551,8 +551,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _reach: 1.5
-  _threshold: 30
+  _threshold: 0.95
   _displayText: {fileID: 1542926851}
+  _interactable: {fileID: 0}
+  _interactKey: 101
 --- !u!1 &204051283
 GameObject:
   m_ObjectHideFlags: 0
@@ -1179,7 +1181,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9fcb42e986e099409a3fc46770f208d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _useText: Retrive
+  _displayTipText: Collect
 --- !u!65 &812735469
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1987,11 +1989,11 @@ RectTransform:
   m_Father: {fileID: 204051284}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 64, y: 54}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 64, y: -64}
   m_SizeDelta: {x: 600, y: 40}
-  m_Pivot: {x: 0, y: 0}
+  m_Pivot: {x: 0, y: 1}
 --- !u!114 &1275110544
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2065,7 +2067,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.0000076293945}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1312819159
@@ -2331,7 +2333,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 80}
+  m_AnchoredPosition: {x: 0, y: 64.6}
   m_SizeDelta: {x: 2000, y: 200}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &1542926851
@@ -2383,6 +2385,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3269671533158473516, guid: 281146cb9bbcac04f91b9ce5aa6b4de1, type: 3}
+      propertyPath: _displayTipText
+      value: Disarm
+      objectReference: {fileID: 0}
     - target: {fileID: 3715867602716290384, guid: 281146cb9bbcac04f91b9ce5aa6b4de1, type: 3}
       propertyPath: m_RootOrder
       value: 1

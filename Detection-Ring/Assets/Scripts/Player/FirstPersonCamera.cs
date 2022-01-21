@@ -4,13 +4,13 @@ using UnityEngine;
 
 public class FirstPersonCamera : MonoBehaviour
 {
-    [SerializeField] private float sensitivityX = 1f;
-    [SerializeField] private float sensitivityY = 1f;
+    [SerializeField] private float sensitivityX = 200f;
+    [SerializeField] private float sensitivityY = 200f;
 
     public Camera Camera { get; private set; }
 
-    float _pitch;
-    float _yaw;
+    private float _pitch;
+    private float _yaw;
 
     private void Awake()
     {

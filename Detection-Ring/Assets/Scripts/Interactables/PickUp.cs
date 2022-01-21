@@ -3,16 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PickUp : Interactable
+public class PickUp : Intractable
 {
-    [SerializeField] private string _useText;
-    public override string UseText => _useText;
-
     public static event Action<PickUp> OnPickedUp;
 
-    public override void Use()
+    public override void OnInteract()
     {
-        gameObject.SetActive(false);
         OnPickedUp?.Invoke(this);
+        gameObject.SetActive(false);
     }
 }
