@@ -25,8 +25,6 @@ public class ProximitySensorDisplayHUD : MonoBehaviour
         _proximitySensor.OnNodesUpdated -= UpdateShader;
     }
 
-
-
     private void OnValidate()
     {
         _radarMaterial.SetTexture("_MainTex", CreateConicGradeientTexture(_textureSize, 360f / _proximitySensor.Nodes.Length));

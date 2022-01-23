@@ -23,7 +23,6 @@ public class ThirdPersonCamera : MonoBehaviour
     private float _yaw;
     private float _pitch;
 
-
     void Awake()
     {
         Camera = GetComponent<Camera>();
@@ -92,5 +91,8 @@ public class ThirdPersonCamera : MonoBehaviour
 
         _yaw = transform.eulerAngles.y;
         _pitch = 0f;
+
+        _yawTr.transform.position = _target.position;
+        transform.localPosition = _offset;
     }
 }
