@@ -45,7 +45,7 @@ public class PickUpManager : MonoBehaviour
     private void InteractableInput()
     {
         if (Input.GetKeyDown(_interactKey) && _interactable != null && GetInteractableBeingLookedAt() != null)
-            _interactable.OnInteract();
+            _interactable.OnInteract(gameObject);
     }
 
     private Intractable GetInteractableBeingLookedAt()
