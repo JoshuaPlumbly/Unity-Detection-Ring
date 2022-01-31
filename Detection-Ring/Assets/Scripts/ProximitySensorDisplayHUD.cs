@@ -25,19 +25,20 @@ public class ProximitySensorDisplayHUD : MonoBehaviour
         _proximitySensor.OnNodesUpdated -= UpdateShader;
     }
 
-    private void OnValidate()
-    {
-        _radarMaterial.SetTexture("_MainTex", CreateConicGradeientTexture(_textureSize, 360f / _proximitySensor.Nodes.Length));
-    }
+    //private void OnValidate()
+    //{
+    //    _radarMaterial.SetTexture("_MainTex", CreateConicGradeientTexture(_textureSize, 360f / _proximitySensor.Nodes.Length));
+    //}
 
     private void Awake()
     {
         _cameraSwitcher = FindObjectOfType<CameraSwitcher>();
+        _radarMaterial.SetTexture("_MainTex", CreateConicGradeientTexture(_textureSize, 360f / _proximitySensor.Nodes.Length));
     }
 
     private void Update()
     {
-        float z = _cameraSwitcher.CurrentCameraTr.eulerAngles.y;
+        float z = CameraManager.Current.transform.eulerAngles.y;
         transform.rotation = Quaternion.Euler(0f, 0f, z);
     }
 

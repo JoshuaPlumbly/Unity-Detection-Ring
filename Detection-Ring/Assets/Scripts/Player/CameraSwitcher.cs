@@ -13,9 +13,6 @@ public class CameraSwitcher : MonoBehaviour
 
     private void Start()
     {
-        _firstPersonCamera = FindObjectOfType<FirstPersonCamera>();
-        _thirdPersonCamera = FindObjectOfType<ThirdPersonCamera>();
-
         if (_firstPersonCamera == null)
             Debug.Log(this.name + " is missing a first person camera.");
 
@@ -27,12 +24,8 @@ public class CameraSwitcher : MonoBehaviour
 
     public void SwitchCamera(bool firstPerson)
     {
+        CameraManager.SwithCamera(firstPerson ? _firstPersonCamera : _thirdPersonCamera as InGameCamera);
         _inFirstPerson = firstPerson;
-        _firstPersonCamera.enabled = firstPerson;
-        _thirdPersonCamera.enabled = !firstPerson;
-
-        CurrentCamera = firstPerson ? _firstPersonCamera.Camera : _thirdPersonCamera.Camera;
-        CurrentCameraTr = CurrentCamera.transform;
     }
 
     private void Update()

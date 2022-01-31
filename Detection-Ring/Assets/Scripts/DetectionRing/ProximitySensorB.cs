@@ -22,6 +22,7 @@ public class ProximitySensorB : MonoBehaviour
 
     public event Action<bool> OnSetActive;
     public event Action<float[]> OnNodesUpdated;
+    public event Action<float> OnChanageInBattery;
 
     public float[] Nodes => _nodes;
 
@@ -35,6 +36,8 @@ public class ProximitySensorB : MonoBehaviour
 
         if (!_isActive)
             return;
+
+        OnChanageInBattery?.Invoke(_batteryPower.CurrentOverMaximumValue());
 
         Collider[] colliders = Physics.OverlapSphere(transform.position, _maxDistance, _layerMask);
 

@@ -8,6 +8,7 @@ using UnityEngine.UI;
 public class PickUpManager : MonoBehaviour
 {
     [SerializeField, Min(0)] float _reach = 1.5f;
+    [SerializeField, Min(0)] float _casualReach = 1f;
     [SerializeField, Range(-1f,1f)] float _threshold = 0.95f;
     [SerializeField] Text _displayText;
     [SerializeField] private Intractable _interactable;
@@ -34,7 +35,7 @@ public class PickUpManager : MonoBehaviour
 
     private void CheckForInteractable()
     {
-        _interactable = GetInteractableBeingLookedAt();
+        _interactable = GetInteractable();
 
         if (_interactable != null)
             _displayText.text = _interactable.DisplayTipText;
@@ -44,7 +45,7 @@ public class PickUpManager : MonoBehaviour
 
     private void InteractableInput()
     {
-        if (Input.GetKeyDown(_interactKey) && _interactable != null && GetInteractableBeingLookedAt() != null)
+        if (Input.GetKeyDown(_interactKey) && _interactable != null)
             _interactable.OnInteract(gameObject);
     }
 
@@ -58,29 +59,57 @@ public class PickUpManager : MonoBehaviour
         if (Physics.Raycast(ray, out RaycastHit hit, _reach))
             result = hit.transform.GetComponent<Intractable>();
 
-        return result != null ? result : ResponsiveSelector(ray);
+        return result;
     }
 
-    private Intractable ResponsiveSelector(Ray ray)
+    private Intractable GetInteractable()
     {
         Intractable result = null;
-        float nearestAngle = Mathf.Infinity;
-        Transform camTransform = _cameraSwitcher.CurrentCamera.transform;
+        Transform camTransform = CameraManager.Current.transform;
 
-        Collider[] colliders = Physics.OverlapSphere(transform.position, _reach);
+        Vector3 playerPosition = transform.position;
+        Vector3 cameraPosition = camTransform.position;
+        Vector3 cameraDirection = Vector3.Normalize(camTransform.forward);
+
+        // Get interactable being directly looked at.
+        if (Physics.Raycast(new Ray(cameraPosition, cameraDirection), out RaycastHit hit, _reach))
+            result = hit.transform.GetComponent<Intractable>();
+
+        if (result != null)
+            return result;
+
+        Collider[] colliders = Physics.OverlapSphere(playerPosition, _reach);
+        float nearestAngle = Mathf.Infinity;
+        float nearestInteractable = Mathf.Infinity;
 
         for (int i = 0; i < colliders.Length; i++)
         {
             if (colliders[i].TryGetComponent(out Intractable interactable))
             {
-                Vector3 toPlayer = colliders[i].transform.position - camTransform.position;
-                toPlayer.Normalize();
+                if (interactable.Ignore)
+                    continue;
 
-                float angleToPlayer = Vector3.Dot(toPlayer, ray.direction);
+                Vector3 collidersPosition = colliders[i].transform.position;
 
-                if (nearestAngle > angleToPlayer && angleToPlayer >= _threshold)
+                // Get interactable with the neastest to the center of screen.
+                Vector3 toCamera = Vector3.Normalize(collidersPosition - cameraPosition);
+                float angleToCamera = Vector3.Dot(toCamera, cameraDirection);
+
+                if (angleToCamera < nearestAngle && angleToCamera >= _threshold)
                 {
-                    nearestAngle = angleToPlayer;
+                    nearestAngle = angleToCamera;
+                    result = interactable;
+                }
+
+                // Get nearest interactable to player.
+                if (result != null)
+                    continue;
+
+                float distanceToPlayer = Vector3.Distance(collidersPosition, playerPosition);
+
+                if (distanceToPlayer < nearestInteractable && distanceToPlayer <= _casualReach)
+                {
+                    nearestInteractable = distanceToPlayer;
                     result = interactable;
                 }
             }

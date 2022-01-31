@@ -17,6 +17,9 @@ public class GameOver : MonoBehaviour
 
     private void RunDisplayGameOver()
     {
+        Cursor.visible = true;
+        Cursor.lockState = CursorLockMode.None;
+
         if (_displayGameOver != null)
             StopCoroutine(_displayGameOver);
 

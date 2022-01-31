@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Camera))]
-public class ThirdPersonCamera : MonoBehaviour
+public class ThirdPersonCamera : InGameCamera
 {
     [SerializeField] Transform _target;
     [SerializeField] float _horizontalSensitivity = 100f;
@@ -17,15 +17,14 @@ public class ThirdPersonCamera : MonoBehaviour
     [SerializeField] Transform _yawTr;
     [SerializeField] Transform _pitchTr;
 
-    public Camera Camera { get; private set; }
-
-
     private float _yaw;
     private float _pitch;
 
-    void Awake()
+    protected override void Awake()
     {
-        Camera = GetComponent<Camera>();
+        base.Awake();
+
+        gameObject.SetActive(false);
 
         _pitch = _pitchTr.rotation.eulerAngles.x;
         _yaw = _yawTr.rotation.eulerAngles.y;
@@ -74,25 +73,19 @@ public class ThirdPersonCamera : MonoBehaviour
         transform.localPosition = Vector3.Lerp(transform.localPosition, _offset, Time.deltaTime * 5);
     }
 
-    private void OnDisable()
+    public override void OnSwitchedTo()
     {
-        Camera.enabled = false;
-
-        if (Camera.GetComponent<AudioListener>() != null)
-            Camera.GetComponent<AudioListener>().enabled = false;
-    }
-
-    private void OnEnable()
-    {
-        Camera.enabled = true;
-
-        if (Camera.GetComponent<AudioListener>() != null)
-            Camera.GetComponent<AudioListener>().enabled = true;
+        gameObject.SetActive(true);
 
         _yaw = transform.eulerAngles.y;
         _pitch = 0f;
 
         _yawTr.transform.position = _target.position;
         transform.localPosition = _offset;
+    }
+
+    public override void OnSwitchedAwayFrom()
+    {
+        gameObject.SetActive(false);
     }
 }

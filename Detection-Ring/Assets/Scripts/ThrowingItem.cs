@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(Rigidbody), typeof(Intractable))]
 public class ThrowingItem : Tool
 {
     [SerializeField] private Rigidbody _rigidBody;
@@ -9,12 +9,14 @@ public class ThrowingItem : Tool
 
     private bool _isHeld = false;
     private TrailRenderer _trailRenderer;
+    private Intractable _intractable;
 
     private void Awake()
     {
         _rigidBody = GetComponent<Rigidbody>();
         _trailRenderer = GetComponent<TrailRenderer>();
-        
+        _intractable = GetComponent<Intractable>();
+
         _trailRenderer.emitting = false;
     }
 
@@ -24,14 +26,26 @@ public class ThrowingItem : Tool
             Launch();
     }
 
-    private void Launch()
+    public void Launch()
     {
         if (!_isHeld)
             return;
 
+        _intractable.Ignore = false;
+
+        Transform cameraTransform = CameraManager.Current.transform;
+        Vector3 forceToAdd = cameraTransform.forward;
+
+        if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out RaycastHit hit, 500f))
+        {
+            forceToAdd = Vector3.Normalize(hit.point - transform.position);
+        }
+
+        forceToAdd = forceToAdd * _throwForce;
+
         _rigidBody.transform.parent = null;
         _rigidBody.isKinematic = false;
-        _rigidBody.velocity = Camera.main.transform.forward * _throwForce;
+        _rigidBody.AddForce(forceToAdd, ForceMode.Impulse);
         _isHeld = false;
 
         if (_trailRenderer != null)
@@ -43,11 +57,18 @@ public class ThrowingItem : Tool
 
     public override void OnSelectedAsMain(Inventory inventory)
     {
+        if (_trailRenderer != null)
+        {
+            _trailRenderer.emitting = false;
+            _trailRenderer.Clear();
+        }
+
+        _intractable.Ignore = true;
+
         _rigidBody.isKinematic = true;
         _rigidBody.transform.parent = inventory.HandTransform;
         _rigidBody.transform.localPosition = Vector3.zero;
         _isHeld = true;
-        _trailRenderer.emitting = false;
     }
 
     private IEnumerator RunWhenStill(System.Action callback, float timeStilFor = 1f)

@@ -9,6 +9,8 @@ public class Capacity
     public float Amount => _amount;
     public float MaximumAmount => _maximumAmount;
 
+    public float CurrentOverMaximumValue() => _amount / _maximumAmount;
+
     public Capacity(float startAmount, float maximumAmount)
     {
         _amount = startAmount;
