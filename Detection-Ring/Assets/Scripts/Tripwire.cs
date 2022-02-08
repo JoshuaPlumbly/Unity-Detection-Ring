@@ -3,46 +3,49 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(BoxCollider))]
 public class Tripwire : MonoBehaviour
 {
+
+    [SerializeField] private Transform _tripwireStartTransform;
     [SerializeField] private Transform _tripwireEndTransform;
     [SerializeField] private LineRenderer _lineRenderer;
     [SerializeField] private LayerMask _mask;
 
     public event Action OnTripped;
-    public Vector3 WireStart => transform.position;
-    public Vector3 WireEnd => _tripwireEndTransform.position;
     public Vector3 WireVector { get; private set; }
 
     public static List<Tripwire> Tripwires { get; private set; } = new List<Tripwire>();
 
+    public Vector3 TripwireStart => _tripwireStartTransform.position;
+    public Vector3 TripwireEnd => _tripwireEndTransform.position;
+
+
     private void Awake()
     {
-        if (_tripwireEndTransform == null)
+        if (_tripwireEndTransform == null || _tripwireStartTransform == null)
         {
-            Debug.LogWarning(this + " is missing a refrence to a transform. This is needed for the tripwire's ending point.");
+            Debug.LogWarning(this + " is missing the transform component(s) for the tripwire's start and/or end point.");
             this.enabled = false;
+            return;
         }
-    }
 
-    private void Update()
-    {
-        Vector3 _tripwireEnd = _tripwireEndTransform.position;
-        Vector3 WireVector = _tripwireEnd - transform.position;
+        Vector3 tripWireStartToEnd = TripwireEnd - TripwireStart;
 
         if (_lineRenderer != null)
         {
             _lineRenderer.positionCount = 2;
-            _lineRenderer.SetPosition(0, transform.position);
-            _lineRenderer.SetPosition(1, _tripwireEnd);
+            _lineRenderer.SetPosition(0, _tripwireStartTransform.position);
+            _lineRenderer.SetPosition(1, _tripwireEndTransform.position);
         }
 
-        if (Physics.Raycast(transform.position, WireVector, out RaycastHit hit, WireVector.magnitude, _mask))
-        {
-            OnTripped?.Invoke();
-            _lineRenderer.enabled = false;
-            this.enabled = false;
-        }
+        transform.position = TripwireStart + (tripWireStartToEnd * 0.5f);
+        transform.LookAt(_tripwireEndTransform);
+
+        var collider = GetComponent<BoxCollider>();
+        collider.center = Vector3.zero;
+        collider.size = new Vector3(0.05f, 0.05f, tripWireStartToEnd.magnitude);
+        collider.isTrigger = true;
     }
 
     private void OnEnable()
@@ -54,5 +57,12 @@ public class Tripwire : MonoBehaviour
     {
         Tripwires.Remove(this);
         _lineRenderer.enabled = false;
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        OnTripped?.Invoke();
+        _lineRenderer.enabled = false;
+        this.enabled = false;
     }
 }

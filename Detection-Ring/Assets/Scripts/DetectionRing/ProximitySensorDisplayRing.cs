@@ -23,30 +23,24 @@ public class ProximitySensorDisplayRing : MonoBehaviour
         if (_proximitySensor == null)
             Debug.LogWarning(this + " is missing a proximity refrence.");
 
-        UpdateAllPositions(_proximitySensor.Nodes);
+        UpdateAllPositions(_proximitySensor.IntensityValues);
     }
 
     private void OnEnable()
     {
         _proximitySensor.OnSetActive += SetActiveState;
-        _proximitySensor.OnNodesUpdated += UpdateYPositions;
+        _proximitySensor.OnIntensityValuesUpdated += UpdateYPositions;
     }
 
     private void OnDisable()
     {
         _proximitySensor.OnSetActive -= SetActiveState;
-        _proximitySensor.OnNodesUpdated -= UpdateYPositions;
+        _proximitySensor.OnIntensityValuesUpdated -= UpdateYPositions;
     }
 
     public void SetActiveState(bool isActive)
     {
         _lineRenderer.enabled = isActive;
-    }
-
-    private void Update()
-    {
-        for (int i = 0; i < _ringPositions.Length; i++)
-            _lineRenderer.SetPosition(i, transform.position + _ringPositions[i]);
     }
 
     private void UpdateAllPositions(float[] nodes)
@@ -72,6 +66,7 @@ public class ProximitySensorDisplayRing : MonoBehaviour
             float y = EvaluateYPosition(nodes[i]);
 
             _ringPositions[i] = new Vector3(x, y, z);
+            _lineRenderer.SetPosition(i, transform.position + _ringPositions[i]);
         }
     }
 
@@ -87,7 +82,10 @@ public class ProximitySensorDisplayRing : MonoBehaviour
         }
 
         for (int i = 0; i < nodes.Length; i++)
+        {
             _ringPositions[i].y = EvaluateYPosition(nodes[i]);
+            _lineRenderer.SetPosition(i, transform.position + _ringPositions[i]);
+        }
     }
 
     private float EvaluateYPosition(float y)

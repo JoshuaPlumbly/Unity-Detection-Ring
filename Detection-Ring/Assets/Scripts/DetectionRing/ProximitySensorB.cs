@@ -16,72 +16,96 @@ public class ProximitySensorB : MonoBehaviour
     [SerializeField, Range(0f,1f)] float _blendRadiusMax = 0.06f;
     [SerializeField] private float _wireBlendRadiusScale = 1.5f;
     [SerializeField] AnimationCurve _curve;
-    [SerializeField] private float[] _nodes;
+
 
     private bool _isActive;
+    [SerializeField] private float[] _intensityValues;
 
     public event Action<bool> OnSetActive;
-    public event Action<float[]> OnNodesUpdated;
+    public event Action<float[]> OnIntensityValuesUpdated;
     public event Action<float> OnChanageInBattery;
 
-    public float[] Nodes => _nodes;
+    public float[] IntensityValues => _intensityValues;
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.T))
-            SetActive(!_isActive);
-
-        if (!_isActive || _batteryPower.Request(_batteryConsumptionPerSecound * Time.deltaTime) == 0)
-            SetActive(false);
+        CheckForPowerInput();
+        CheckBatteryLife();
 
         if (!_isActive)
             return;
 
-        OnChanageInBattery?.Invoke(_batteryPower.CurrentOverMaximumValue());
+        RefreshBatteryUIElements();
+        RefreshIntensityValues();
+    }
+
+    private void RefreshIntensityValues()
+    {
+        SetAllHeightElementsToZero();
 
         Collider[] colliders = Physics.OverlapSphere(transform.position, _maxDistance, _layerMask);
 
         float maxSistanceSqr = _maxDistance * _maxDistance;
 
-        for (int i = 0; i < _nodes.Length; i++)
-            _nodes[i] = 0f;
-
         for (int i = 0; i < colliders.Length; i++)
         {
-            int closestNodeIndex = Mathf.RoundToInt(_nodes.Length * CompassAngleNormalised(transform.position, colliders[i].transform.position));
-            closestNodeIndex = closestNodeIndex < _nodes.Length ? closestNodeIndex : 0;
+            int closestNodeIndex = Mathf.RoundToInt(_intensityValues.Length * CompassAngleNormalised(transform.position, colliders[i].transform.position));
+            closestNodeIndex = closestNodeIndex < _intensityValues.Length ? closestNodeIndex : 0;
             float strength = Mathf.InverseLerp(maxSistanceSqr, 0f, (transform.position - colliders[i].transform.position).sqrMagnitude);
-            int nodesToBlend = Mathf.RoundToInt(Mathf.Lerp(_blendRadiusMin, _blendRadiusMax, strength) * _nodes.Length);
+            int nodesToBlend = Mathf.RoundToInt(Mathf.Lerp(_blendRadiusMin, _blendRadiusMax, strength) * _intensityValues.Length);
 
             for (int j = -nodesToBlend; j < nodesToBlend; j++)
             {
-                int nodeIndex = ((closestNodeIndex + j % _nodes.Length) + _nodes.Length) % _nodes.Length;
+                int nodeIndex = ((closestNodeIndex + j % _intensityValues.Length) + _intensityValues.Length) % _intensityValues.Length;
                 float strengthB = Mathf.Lerp(strength, 0f, _curve.Evaluate((float)Mathf.Abs(j) / nodesToBlend));
-                _nodes[nodeIndex] += strengthB;
+                _intensityValues[nodeIndex] += strengthB;
             }
         }
 
         for (int i = 0; i < Tripwire.Tripwires.Count; i++)
         {
-            Vector3 closest = ClosestPointToLine(transform.position, Tripwire.Tripwires[i].WireStart, Tripwire.Tripwires[i].WireEnd);
+            Vector3 closest = ClosestPointToLine(transform.position, Tripwire.Tripwires[i].TripwireStart, Tripwire.Tripwires[i].TripwireEnd);
 
             if ((closest - transform.position).sqrMagnitude > _maxDistance * _maxDistance)
                 continue;
 
-            int closestNodeIndex = Mathf.RoundToInt(_nodes.Length * CompassAngleNormalised(transform.position, closest));
-            closestNodeIndex = closestNodeIndex < _nodes.Length ? closestNodeIndex : 0;
+            int closestNodeIndex = Mathf.RoundToInt(_intensityValues.Length * CompassAngleNormalised(transform.position, closest));
+            closestNodeIndex = closestNodeIndex < _intensityValues.Length ? closestNodeIndex : 0;
             float strength = Mathf.InverseLerp(maxSistanceSqr, 0f, (transform.position - closest).sqrMagnitude);
-            int nodesToBlend = Mathf.RoundToInt(Mathf.Lerp(_blendRadiusMin, _blendRadiusMax, strength) * _wireBlendRadiusScale * _nodes.Length);
+            int nodesToBlend = Mathf.RoundToInt(Mathf.Lerp(_blendRadiusMin, _blendRadiusMax, strength) * _wireBlendRadiusScale * _intensityValues.Length);
 
             for (int j = -nodesToBlend; j < nodesToBlend; j++)
             {
-                int nodeIndex = ((closestNodeIndex + j % _nodes.Length) + _nodes.Length) % _nodes.Length;
+                int nodeIndex = ((closestNodeIndex + j % _intensityValues.Length) + _intensityValues.Length) % _intensityValues.Length;
                 float strengthB = Mathf.Lerp(strength, 0f, _curve.Evaluate((float)Mathf.Abs(j) / nodesToBlend));
-                _nodes[nodeIndex] += strengthB;
+                _intensityValues[nodeIndex] += strengthB;
             }
         }
 
-        OnNodesUpdated?.Invoke(_nodes);
+        OnIntensityValuesUpdated?.Invoke(_intensityValues);
+    }
+
+    private void SetAllHeightElementsToZero()
+    {
+        for (int i = 0; i < _intensityValues.Length; i++)
+            _intensityValues[i] = 0f;
+    }
+
+    private void RefreshBatteryUIElements()
+    {
+        OnChanageInBattery?.Invoke(_batteryPower.CurrentOverMaximumValue());
+    }
+
+    private void CheckBatteryLife()
+    {
+        if (!_isActive || _batteryPower.Request(_batteryConsumptionPerSecound * Time.deltaTime) == 0)
+            SetActive(false);
+    }
+
+    private void CheckForPowerInput()
+    {
+        if (Input.GetKeyDown(KeyCode.T))
+            SetActive(!_isActive);
     }
 
     public void SetActive(bool isActive)

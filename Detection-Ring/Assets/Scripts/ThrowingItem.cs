@@ -34,18 +34,12 @@ public class ThrowingItem : Tool
         _intractable.Ignore = false;
 
         Transform cameraTransform = CameraManager.Current.transform;
-        Vector3 forceToAdd = cameraTransform.forward;
-
-        if (Physics.Raycast(cameraTransform.position, cameraTransform.forward, out RaycastHit hit, 500f))
-        {
-            forceToAdd = Vector3.Normalize(hit.point - transform.position);
-        }
-
-        forceToAdd = forceToAdd * _throwForce;
+        Vector3 forceToAdd = cameraTransform.forward * _throwForce;
 
         _rigidBody.transform.parent = null;
+        _rigidBody.transform.position = cameraTransform.position + cameraTransform.forward;
         _rigidBody.isKinematic = false;
-        _rigidBody.AddForce(forceToAdd, ForceMode.Impulse);
+        _rigidBody.AddForce(forceToAdd, ForceMode.VelocityChange);
         _isHeld = false;
 
         if (_trailRenderer != null)
