@@ -15,14 +15,14 @@ public class ProximitySensorDisplayHUD : MonoBehaviour
 
     private void OnEnable()
     {
-        _proximitySensor.OnIntensityValuesUpdated += UpdateShader;
+        _proximitySensor.OnSetIntensityValues += UpdateShader;
 
         _radarMaterial.SetTexture("Texture", CreateConicGradeientTexture(_textureSize, 360f / _proximitySensor.IntensityValues.Length));
     }
 
     private void OnDisable()
     {
-        _proximitySensor.OnIntensityValuesUpdated -= UpdateShader;
+        _proximitySensor.OnSetIntensityValues -= UpdateShader;
     }
 
     //private void OnValidate()

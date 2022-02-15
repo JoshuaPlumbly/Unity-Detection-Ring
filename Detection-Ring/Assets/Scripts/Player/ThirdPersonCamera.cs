@@ -2,49 +2,29 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(Camera))]
-public class ThirdPersonCamera : InGameCamera
+public class ThirdPersonCamera : MonoBehaviour, IGameCamera
 {
-    [SerializeField] Transform _target;
-    [SerializeField] float _horizontalSensitivity = 100f;
-    [SerializeField] float _verticalSensitivity = 100f;
+    [SerializeField] private Transform _cameraTransform;
+    [SerializeField] private Transform _lookDirectionTransform;
+    [SerializeField] float _horizontalSensitivity = 200f;
+    [SerializeField] float _verticalSensitivity = 200f;
+
     [SerializeField] float _lowestCameraPitch = -80f;
     [SerializeField] float _highestCameraPitch = 80f;
-    [SerializeField] float _mouseRotAcceleration;
+
     [SerializeField] float _smoothSpeed;
     [SerializeField] Vector3 _offset;
-
-    [SerializeField] Transform _yawTr;
-    [SerializeField] Transform _pitchTr;
 
     private float _yaw;
     private float _pitch;
 
-    protected override void Awake()
+    protected void Awake()
     {
-        base.Awake();
-
-        gameObject.SetActive(false);
-
-        _pitch = _pitchTr.rotation.eulerAngles.x;
-        _yaw = _yawTr.rotation.eulerAngles.y;
+        if (!_cameraTransform || !_lookDirectionTransform)
+            Debug.LogWarning(this + " is missing dependencies.");
     }
 
     private void Update()
-    {
-        ComputeUserInput();
-    }
-
-    private void LateUpdate()
-    {
-        if (_target == null)
-            return;
-
-        CameraRotation();
-        CameraTranslate();
-    }
-
-    private void ComputeUserInput()
     {
         float mouseX = Input.GetAxis("Mouse X");
         float mouseY = Input.GetAxis("Mouse Y");
@@ -56,36 +36,22 @@ public class ThirdPersonCamera : InGameCamera
         _yaw = _yaw % 360f;
     }
 
-    void CameraRotation()
+    private void LateUpdate()
     {
-        Quaternion yAngle = Quaternion.Euler(_yawTr.rotation.eulerAngles.x, _yaw, _yawTr.rotation.eulerAngles.z);
-        _yawTr.rotation = Quaternion.Slerp(_yawTr.rotation, yAngle, Time.deltaTime * _mouseRotAcceleration);
-
-        Quaternion xAngle = Quaternion.Euler(_pitch, _yawTr.rotation.eulerAngles.y, _yawTr.rotation.eulerAngles.z);
-        _pitchTr.rotation = Quaternion.Slerp(_pitchTr.rotation, xAngle, Time.deltaTime * _mouseRotAcceleration);
-
-        _target.localRotation = Quaternion.Euler(0f, _yaw, 0f);
+        _lookDirectionTransform.localRotation = Quaternion.Euler(_pitch, _yaw, 0f);
+        _cameraTransform.localPosition = _offset;
     }
 
-    void CameraTranslate()
+    public void OnSwitchedTo()
     {
-        _yawTr.transform.position = Vector3.Lerp(_yawTr.transform.position, _target.position, Time.deltaTime * _smoothSpeed);
-        transform.localPosition = Vector3.Lerp(transform.localPosition, _offset, Time.deltaTime * 5);
+        _cameraTransform.gameObject.SetActive(true);
+        _cameraTransform.parent = _lookDirectionTransform;
+        _cameraTransform.localPosition = _offset;
+        _cameraTransform.localRotation = Quaternion.identity;
     }
 
-    public override void OnSwitchedTo()
+    public void OnSwitchedAwayFrom()
     {
-        gameObject.SetActive(true);
-
-        _yaw = transform.eulerAngles.y;
-        _pitch = 0f;
-
-        _yawTr.transform.position = _target.position;
-        transform.localPosition = _offset;
-    }
-
-    public override void OnSwitchedAwayFrom()
-    {
-        gameObject.SetActive(false);
+        
     }
 }

@@ -2,7 +2,7 @@
 
 public static class CameraManager
 {
-    public static InGameCamera CurrentInGameCamera { get; private set; }
+    public static IGameCamera CurrentInGameCamera { get; private set; }
 
     public static Camera Current
     {
@@ -17,13 +17,12 @@ public static class CameraManager
 
     private static Camera _current = null;
 
-    public static void SwithCamera(InGameCamera newInGameCamera)
+    public static void SwithCamera(IGameCamera newInGameCamera)
     {
         if (CurrentInGameCamera != null)
             CurrentInGameCamera.OnSwitchedAwayFrom();
 
         CurrentInGameCamera = newInGameCamera;
         CurrentInGameCamera.OnSwitchedTo();
-        _current = newInGameCamera.GameCamera;
     }
 }

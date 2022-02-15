@@ -8,7 +8,7 @@ public class ProximitySensorDisplayRing : MonoBehaviour
     [SerializeField] private ProximitySensorB _proximitySensor;
     [SerializeField] private float _radius = 2f;
     [SerializeField] private float _heightScale = 0.8f;
-    [SerializeField] private AnimationCurve _strengthToHeight = new AnimationCurve(new Keyframe(0f,0f), new Keyframe(1f,1f), new Keyframe(2f,1.5f), new Keyframe(5f, 2f));
+    [SerializeField] private AnimationCurve _strengthCurve = new AnimationCurve(new Keyframe(0f,0f), new Keyframe(1f,1f), new Keyframe(2f,1.5f), new Keyframe(5f, 2f));
 
     private LineRenderer _lineRenderer;
     private Vector3[] _ringPositions;
@@ -28,26 +28,23 @@ public class ProximitySensorDisplayRing : MonoBehaviour
 
     private void OnEnable()
     {
-        _proximitySensor.OnSetActive += SetActiveState;
-        _proximitySensor.OnIntensityValuesUpdated += UpdateYPositions;
+        _proximitySensor.OnSetPower += SetPowerOn;
+        _proximitySensor.OnSetIntensityValues += Refresh;
     }
 
     private void OnDisable()
     {
-        _proximitySensor.OnSetActive -= SetActiveState;
-        _proximitySensor.OnIntensityValuesUpdated -= UpdateYPositions;
+        _proximitySensor.OnSetPower -= SetPowerOn;
+        _proximitySensor.OnSetIntensityValues -= Refresh;
     }
 
-    public void SetActiveState(bool isActive)
+    public void SetPowerOn(bool isActive)
     {
         _lineRenderer.enabled = isActive;
     }
 
     private void UpdateAllPositions(float[] nodes)
     {
-        if (nodes.Length <= 0)
-            return;
-
         if (_lineRenderer.positionCount != nodes.Length)
             _lineRenderer.positionCount = nodes.Length;
 
@@ -70,16 +67,26 @@ public class ProximitySensorDisplayRing : MonoBehaviour
         }
     }
 
-    private void UpdateYPositions(float[] nodes)
+    private Vector3[] GenerateRingVertices(int vertexCount, float radius)
     {
-        if (nodes.Length <= 0)
-            return;
+        Vector3[] vertices = new Vector3[vertexCount];
+        float radiansPerVertex = (1f / vertexCount) * doublePI;
 
-        if (nodes.Length != _ringPositions.Length || nodes.Length != _lineRenderer.positionCount)
+        for (int i = 0; i < vertexCount; i++)
         {
-            UpdateAllPositions(nodes);
-            return;
+            float radians = radiansPerVertex * i;
+            vertices[i] = new Vector3(Mathf.Sin(radians) * radians, Mathf.Cos(radians) * radians, 0f);
         }
+
+        return vertices;
+    }
+
+    private void Refresh(float[] nodes)
+    {
+        _lineRenderer.positionCount = nodes.Length;
+
+        if (_ringPositions.Length != nodes.Length)
+            _ringPositions = GenerateRingVertices(nodes.Length, _radius);
 
         for (int i = 0; i < nodes.Length; i++)
         {
@@ -90,6 +97,6 @@ public class ProximitySensorDisplayRing : MonoBehaviour
 
     private float EvaluateYPosition(float y)
     {
-        return _strengthToHeight.Evaluate(y) * _heightScale;
+        return _strengthCurve.Evaluate(y) * _heightScale;
     }
 }

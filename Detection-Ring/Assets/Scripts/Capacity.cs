@@ -11,15 +11,13 @@ public class Capacity
 
     public float CurrentOverMaximumValue() => _amount / _maximumAmount;
 
-    public Capacity(float startAmount, float maximumAmount)
+    public Capacity(float amount, float maximumAmount)
     {
-        _amount = startAmount;
+        _amount = amount;
         _maximumAmount = maximumAmount;
     }
 
-    float CapacityDividedByMaxCapacity() => _amount / _maximumAmount;
-
-    public float Request(float request)
+    public float Extract(float request)
     {
         float result = Mathf.Min(request, _amount);
         _amount = Mathf.Max(_amount - request, 0f);

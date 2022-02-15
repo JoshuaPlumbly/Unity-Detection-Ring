@@ -4,13 +4,13 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Image))]
 public class BatteryPowerBar : MonoBehaviour
 {
-    [SerializeField] ProximitySensorB _health;
+    [SerializeField] ProximitySensorB _proximitySensor;
     private Image _image;
 
     private void Awake()
     {
         _image = GetComponent<Image>();
-        _health.OnChanageInBattery += ChanageFillAmount;
+        _proximitySensor.OnChanageInBattery += ChanageFillAmount;
     }
 
     private void ChanageFillAmount(float newFillAmount)
