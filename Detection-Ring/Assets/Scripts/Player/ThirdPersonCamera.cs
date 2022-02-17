@@ -48,6 +48,9 @@ public class ThirdPersonCamera : MonoBehaviour, IGameCamera
         _cameraTransform.parent = _lookDirectionTransform;
         _cameraTransform.localPosition = _offset;
         _cameraTransform.localRotation = Quaternion.identity;
+
+        _pitch = _lookDirectionTransform.eulerAngles.x;
+        _yaw = _lookDirectionTransform.eulerAngles.y;
     }
 
     public void OnSwitchedAwayFrom()

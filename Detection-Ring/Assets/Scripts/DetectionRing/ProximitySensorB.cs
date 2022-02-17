@@ -16,7 +16,6 @@ public class ProximitySensorB : MonoBehaviour
     [Header("Stenght")]
     [SerializeField, Range(0f,1f)] float _blendRadiusMin = 0.1f;
     [SerializeField, Range(0f,1f)] float _blendRadiusMax = 0.06f;
-    [SerializeField] private float _wireBlendRadiusScale = 1.5f;
     [SerializeField] AnimationCurve _curve;
 
 
@@ -30,7 +29,7 @@ public class ProximitySensorB : MonoBehaviour
     public float[] IntensityValues => _intensityValues;
     
     public const float Tau = 6.2831853071796f;
-    public const float RevsPerRad = 0.1591549430919f;
+    public const float RevPerRad = 0.1591549430919f;
 
     void Update()
     {
@@ -46,7 +45,7 @@ public class ProximitySensorB : MonoBehaviour
 
     private void RefreshIntensityValues()
     {
-        SetAllHeightElementsToZero();
+        SetStrengthValuesToZero();
 
         Vector3 position = transform.position;
         Collider[] colliders = Physics.OverlapSphere(position, _radius, _layerMask, QueryTriggerInteraction.Collide);
@@ -70,7 +69,7 @@ public class ProximitySensorB : MonoBehaviour
         OnSetIntensityValues?.Invoke(_intensityValues);
     }
 
-    private void SetAllHeightElementsToZero()
+    private void SetStrengthValuesToZero()
     {
         for (int i = 0; i < _intensityValues.Length; i++)
             _intensityValues[i] = 0f;
@@ -109,6 +108,6 @@ public class ProximitySensorB : MonoBehaviour
 
     public static float AzimuthRevolutions(Vector3 from, Vector3 to)
     {
-        return AzimuthRadians(from, to) * RevsPerRad;
+        return AzimuthRadians(from, to) * RevPerRad;
     }
 }

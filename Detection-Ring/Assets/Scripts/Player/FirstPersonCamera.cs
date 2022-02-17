@@ -14,7 +14,7 @@ public class FirstPersonCamera : MonoBehaviour, IGameCamera
 
     protected void Awake()
     {
-        if (_cameraTransform || _lookDirectionTransform)
+        if (!_cameraTransform || !_lookDirectionTransform)
             Debug.LogWarning(this + " is missing dependencies.");
     }
 
