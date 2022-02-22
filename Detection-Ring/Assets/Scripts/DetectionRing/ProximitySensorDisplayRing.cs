@@ -13,7 +13,7 @@ public class ProximitySensorDisplayRing : MonoBehaviour
     private LineRenderer _lineRenderer;
     private Vector3[] _ringPositions;
 
-    public const float doublePI = (float)Mathf.PI * 2f;
+    public const float tau = (float)Mathf.PI * 2f;
 
     private void Awake()
     {
@@ -22,20 +22,20 @@ public class ProximitySensorDisplayRing : MonoBehaviour
 
         if (_proximitySensor == null)
             Debug.LogWarning(this + " is missing a proximity refrence.");
-
-        UpdateAllPositions(_proximitySensor.IntensityValues);
     }
 
     private void OnEnable()
     {
         _proximitySensor.OnSetPower += SetPowerOn;
-        _proximitySensor.OnSetIntensityValues += Refresh;
+        _proximitySensor.OnSetStrengthValues += Refresh;
     }
 
     private void OnDisable()
     {
         _proximitySensor.OnSetPower -= SetPowerOn;
-        _proximitySensor.OnSetIntensityValues -= Refresh;
+        _proximitySensor.OnSetStrengthValues -= Refresh;
+
+        _lineRenderer.enabled = false;
     }
 
     public void SetPowerOn(bool isActive)
@@ -56,7 +56,7 @@ public class ProximitySensorDisplayRing : MonoBehaviour
         for (int i = 0; i < nodes.Length; i++)
         {
             float circumferenceProgress = (float)i / nodes.Length;
-            float currentRadian = circumferenceProgress * doublePI;
+            float currentRadian = circumferenceProgress * tau;
 
             float x = Mathf.Sin(currentRadian) * _radius;
             float z = Mathf.Cos(currentRadian) * _radius;
@@ -70,12 +70,12 @@ public class ProximitySensorDisplayRing : MonoBehaviour
     private Vector3[] GenerateRingVertices(int vertexCount, float radius)
     {
         Vector3[] vertices = new Vector3[vertexCount];
-        float radiansPerVertex = (1f / vertexCount) * doublePI;
+        float radiansPerVertex = (1f / vertexCount) * tau;
 
         for (int i = 0; i < vertexCount; i++)
         {
-            float radians = radiansPerVertex * i;
-            vertices[i] = new Vector3(Mathf.Sin(radians) * radians, Mathf.Cos(radians) * radians, 0f);
+            float angle = radiansPerVertex * i;
+            vertices[i] = new Vector3(Mathf.Sin(angle) * radius, 0f, Mathf.Cos(angle) * radius);
         }
 
         return vertices;
@@ -85,7 +85,7 @@ public class ProximitySensorDisplayRing : MonoBehaviour
     {
         _lineRenderer.positionCount = nodes.Length;
 
-        if (_ringPositions.Length != nodes.Length)
+        if (_ringPositions == null || _ringPositions.Length != nodes.Length)
             _ringPositions = GenerateRingVertices(nodes.Length, _radius);
 
         for (int i = 0; i < nodes.Length; i++)

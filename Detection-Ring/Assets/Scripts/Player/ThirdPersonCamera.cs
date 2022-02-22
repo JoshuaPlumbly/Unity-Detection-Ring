@@ -15,8 +15,8 @@ public class ThirdPersonCamera : MonoBehaviour, IGameCamera
     [SerializeField] float _smoothSpeed;
     [SerializeField] Vector3 _offset;
 
-    private float _yaw;
-    private float _pitch;
+    private float _yaw = 0f;
+    private float _pitch = 0f;
 
     protected void Awake()
     {

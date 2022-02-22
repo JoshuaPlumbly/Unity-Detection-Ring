@@ -63,6 +63,7 @@ public class Tripwire : MonoBehaviour
     {
         OnTripped?.Invoke();
         _lineRenderer.enabled = false;
+        GetComponent<BoxCollider>().enabled = false;
         this.enabled = false;
     }
 }

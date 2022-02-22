@@ -7,14 +7,17 @@ using UnityEngine.UI;
 [RequireComponent(typeof(CameraSwitcher))]
 public class PickUpManager : MonoBehaviour
 {
+    [SerializeField] private Image _progressBar;
+    [SerializeField] private KeyCode _interactKey = KeyCode.E;
     [SerializeField, Min(0)] float _reach = 1.5f;
     [SerializeField, Min(0)] float _casualReach = 1f;
     [SerializeField, Range(-1f,1f)] float _threshold = 0.95f;
     [SerializeField] Text _displayText;
-    [SerializeField] private Intractable _interactable;
-    [SerializeField] private KeyCode _interactKey = KeyCode.E;
 
+
+    public Intractable _bestInteractable;
     private CameraSwitcher _cameraSwitcher;
+    public float _progress = 0f;
 
     private void Awake()
     {
@@ -29,37 +32,36 @@ public class PickUpManager : MonoBehaviour
 
     private void Update()
     {
-        CheckForInteractable();
+        SelectBestInteractable();
         InteractableInput();
     }
 
-    private void CheckForInteractable()
+    private void SelectBestInteractable()
     {
-        _interactable = GetInteractable();
+        var newBestInteractable = GetInteractable();
 
-        if (_interactable != null)
-            _displayText.text = _interactable.DisplayTipText;
-        else
-            _displayText.text = "";
+        if (newBestInteractable != _bestInteractable)
+        {
+            _bestInteractable = newBestInteractable;
+
+            if (_bestInteractable != null)
+                _displayText.text = _bestInteractable.IntractableText;
+            else
+                _displayText.text = "";
+        }
     }
 
     private void InteractableInput()
     {
-        if (Input.GetKeyDown(_interactKey) && _interactable != null)
-            _interactable.OnInteract(gameObject);
-    }
+        if (_bestInteractable == null)
+            return;
 
-    private Intractable GetInteractableBeingLookedAt()
-    {
-        Intractable result = null;
-        Transform camTransform = _cameraSwitcher.CurrentCamera.transform;
-
-        Ray ray = new Ray(camTransform.position, camTransform.forward);
-
-        if (Physics.Raycast(ray, out RaycastHit hit, _reach))
-            result = hit.transform.GetComponent<Intractable>();
-
-        return result;
+        if (Input.GetKeyDown(_interactKey))
+            _bestInteractable.OnInteractDown(gameObject);
+        else if (Input.GetKeyUp(_interactKey))
+            _bestInteractable.OnInteractUp(gameObject);
+        else if (Input.GetKey(_interactKey))
+            _bestInteractable.OnInteract(gameObject);
     }
 
     private Intractable GetInteractable()

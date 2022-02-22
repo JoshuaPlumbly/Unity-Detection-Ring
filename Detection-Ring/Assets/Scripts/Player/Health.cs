@@ -39,18 +39,19 @@ public class Health : MonoBehaviour, IDamageable
 
     private void Death()
     {
-        MeshRenderer[] meshRenders = transform.GetComponentsInChildren<MeshRenderer>();
+        MonoBehaviour[] monoBehaviours = transform.GetComponentsInChildren<MonoBehaviour>();
 
-        for (int i = 0; i < meshRenders.Length; i++)
+        for (int i = 0; i < monoBehaviours.Length; i++)
         {
-            meshRenders[i].enabled = false;
+            monoBehaviours[i].enabled = false;
         }
 
-        ProximitySensorB[] proximitySensors = transform.GetComponentsInChildren<ProximitySensorB>();
 
-        for (int i = 0; i < proximitySensors.Length; i++)
+        MeshRenderer[] meshrenders = transform.GetComponentsInChildren<MeshRenderer>();
+
+        for (int i = 0; i < meshrenders.Length; i++)
         {
-            proximitySensors[i].SetPower(false);
+            meshrenders[i].enabled = false;
         }
     }
 }
