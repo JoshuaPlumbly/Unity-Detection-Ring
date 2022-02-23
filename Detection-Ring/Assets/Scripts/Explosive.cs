@@ -14,14 +14,12 @@ public class Explosive : MonoBehaviour
 
         for (int i = 0; i < colliders.Length; i++)
         {
-            var health = colliders[i].GetComponentInParent<IDamageable>();
-
-            if (health == null)
-                continue;
-
-            var hitPoint = colliders[i].ClosestPoint(transform.position);
-            var hitDirection = colliders[i].transform.position - transform.position;
-            health.TakeDamage(_damage, hitPoint, hitDirection);
+            if (colliders[i].TryGetComponent<IDamageable>(out IDamageable damageable))
+            {
+                var hitPoint = colliders[i].ClosestPoint(transform.position);
+                var hitDirection = colliders[i].transform.position - transform.position;
+                damageable.TakeDamage(_damage, hitPoint, hitDirection);
+            }
         }
 
         Instantiate(_explosionEffect, transform.position, Quaternion.LookRotation(Vector3.up));

@@ -11,13 +11,13 @@ public class PickUpManager : MonoBehaviour
     [SerializeField] private KeyCode _interactKey = KeyCode.E;
     [SerializeField, Min(0)] float _reach = 1.5f;
     [SerializeField, Min(0)] float _casualReach = 1f;
-    [SerializeField, Range(-1f,1f)] float _threshold = 0.95f;
+    [SerializeField, Range(-1f, 1f)] float _threshold = 0.95f;
     [SerializeField] Text _displayText;
-
 
     public Intractable _bestInteractable;
     private CameraSwitcher _cameraSwitcher;
-    public float _progress = 0f;
+    private float _progress = 0f;
+    private Intractable _lastInteractedWith;
 
     private void Awake()
     {
@@ -38,17 +38,12 @@ public class PickUpManager : MonoBehaviour
 
     private void SelectBestInteractable()
     {
-        var newBestInteractable = GetInteractable();
+        _bestInteractable = GetInteractable();
 
-        if (newBestInteractable != _bestInteractable)
-        {
-            _bestInteractable = newBestInteractable;
-
-            if (_bestInteractable != null)
-                _displayText.text = _bestInteractable.IntractableText;
-            else
-                _displayText.text = "";
-        }
+        if (_bestInteractable != null)
+            _displayText.text = _bestInteractable.IntractableText;
+        else
+            _displayText.text = "";
     }
 
     private void InteractableInput()
@@ -57,11 +52,18 @@ public class PickUpManager : MonoBehaviour
             return;
 
         if (Input.GetKeyDown(_interactKey))
+        {
+            _lastInteractedWith = _bestInteractable;
             _bestInteractable.OnInteractDown(gameObject);
-        else if (Input.GetKeyUp(_interactKey))
-            _bestInteractable.OnInteractUp(gameObject);
-        else if (Input.GetKey(_interactKey))
-            _bestInteractable.OnInteract(gameObject);
+        }
+
+        if (_bestInteractable == _lastInteractedWith)
+        {
+            if (Input.GetKeyUp(_interactKey))
+                _bestInteractable.OnInteractUp(gameObject);
+            else if (Input.GetKey(_interactKey))
+                _bestInteractable.OnInteract(gameObject);
+        }
     }
 
     private Intractable GetInteractable()

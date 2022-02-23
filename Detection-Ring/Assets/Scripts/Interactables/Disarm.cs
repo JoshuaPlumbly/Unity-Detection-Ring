@@ -5,10 +5,11 @@ using UnityEngine;
 
 public class Disarm : Intractable
 {
-    public GameObject toRemove;
+    [SerializeField] private GameObject _toRemove;
+    [SerializeField] private float _holdDuration;
+    [SerializeField] private float _holdTimeElapsed;
+
     public static event Action<Disarm> OnDisarmed;
-    public float _holdDuration;
-    public float _holdTimeElapsed;
 
     public override string IntractableText => "Disarm";
 
@@ -19,7 +20,7 @@ public class Disarm : Intractable
         if (_holdTimeElapsed >= _holdDuration)
         {
             OnDisarmed?.Invoke(this);
-            gameObject.SetActive(false);
+            _toRemove.SetActive(false);
         }
     }
 
@@ -30,5 +31,6 @@ public class Disarm : Intractable
 
     public override void OnInteractUp(GameObject subject)
     {
+
     }
 }
