@@ -31,6 +31,10 @@ public class GameOver : MonoBehaviour
     {
         yield return new WaitForSeconds(_delay);
         _gameOverPanel.SetActive(true);
+
+        InGameHUDHandler inGameHUD = FindObjectOfType<InGameHUDHandler>();
+        if (inGameHUD != null) 
+            inGameHUD.SetEnabled(false);
     }
 
     public void RestartScene()

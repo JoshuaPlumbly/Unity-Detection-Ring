@@ -1,0 +1,1 @@
+﻿public enum DeviceStatus { Operating, Disrupted, Recovering };

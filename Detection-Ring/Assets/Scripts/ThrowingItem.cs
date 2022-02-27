@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody), typeof(Intractable))]
+[RequireComponent(typeof(Rigidbody), typeof(Interactable))]
 public class ThrowingItem : Tool
 {
     [SerializeField] private Rigidbody _rigidBody;
@@ -9,13 +9,13 @@ public class ThrowingItem : Tool
 
     private bool _isHeld = false;
     private TrailRenderer _trailRenderer;
-    private Intractable _intractable;
+    private Interactable _intractable;
 
     private void Awake()
     {
         _rigidBody = GetComponent<Rigidbody>();
         _trailRenderer = GetComponent<TrailRenderer>();
-        _intractable = GetComponent<Intractable>();
+        _intractable = GetComponent<Interactable>();
 
         _trailRenderer.emitting = false;
     }

@@ -3,22 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(ThrowingItem))]
-public class ThrowingItemPickup : Intractable
+public class ThrowingItemPickup : Interactable
 {
-    public override string IntractableText => "Pick up";
-
-    public override void OnInteract(GameObject subject)
+    public override void OnUpdate(GameObject subject)
     {
-        if (subject.TryGetComponent<Inventory>(out var inventory)){
-            inventory.PickUp(GetComponent<ThrowingItem>());
+        if (Input.GetKey(KeyCode.E))
+        {
+            if (subject.TryGetComponent<Inventory>(out var inventory))
+            {
+                inventory.PickUp(GetComponent<ThrowingItem>());
+            }
         }
     }
 
-    public override void OnInteractDown(GameObject subject)
+    public override void OnEnter(GameObject subject)
     {
     }
 
-    public override void OnInteractUp(GameObject subject)
+    public override void OnExit(GameObject subject)
     {
     }
 }

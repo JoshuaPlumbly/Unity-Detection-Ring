@@ -1,14 +1,17 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
-[RequireComponent(typeof(AudioSource))]
-public class DisruptTriggerZone : MonoBehaviour, IDisruptable
+public partial class DisruptableDeviceManager : MonoBehaviour, IDisruptable
 {
-    [SerializeField] private Collider _triggerZone;
+    [SerializeField] private IDisruted[] _disrutedElements;
     [SerializeField] private float _disruptDuration = 7f;
     [SerializeField] private float _restoreTime = 0.8f;
 
+    public event Action<DeviceStatus> OnStatusChanged;
+    
     private IEnumerator _disruptCoroutine;
 
     public void Disrupt()
@@ -22,17 +25,12 @@ public class DisruptTriggerZone : MonoBehaviour, IDisruptable
 
     private IEnumerator DisruptTime(float time)
     {
-        _triggerZone.enabled = false;
-        AudioSource audioSource = GetComponent<AudioSource>();
-
-        if (!audioSource.isPlaying)
-            audioSource.Play();
+        OnStatusChanged?.Invoke(DeviceStatus.Disrupted);
 
         yield return new WaitForSeconds(time);
-        audioSource.Stop();
+        OnStatusChanged?.Invoke(DeviceStatus.Recovering);
 
         yield return new WaitForSeconds(_restoreTime);
-        _triggerZone.enabled = true;
-
+        OnStatusChanged?.Invoke(DeviceStatus.Operating);
     }
 }

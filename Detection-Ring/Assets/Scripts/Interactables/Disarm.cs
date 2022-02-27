@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Disarm : Intractable
+public class Disarm : Interactable
 {
     [SerializeField] private GameObject _toRemove;
     [SerializeField] private float _holdDuration;
@@ -11,26 +11,51 @@ public class Disarm : Intractable
 
     public static event Action<Disarm> OnDisarmed;
 
-    public override string IntractableText => "Disarm";
+    public string PromtText => "Disarm";
 
-    public override void OnInteract(GameObject subject)
+    public override void OnUpdate(GameObject subject)
     {
-        _holdTimeElapsed += Time.deltaTime;
-
-        if (_holdTimeElapsed >= _holdDuration)
+        if (Input.GetKey(KeyCode.E))
         {
-            OnDisarmed?.Invoke(this);
-            _toRemove.SetActive(false);
+            _holdTimeElapsed += Time.deltaTime;
+
+            if (_holdTimeElapsed >= _holdDuration)
+            {
+                OnDisarmed?.Invoke(this);
+                _toRemove.SetActive(false);
+            }
+        }
+        else
+        {
+            _holdTimeElapsed = 0f;
         }
     }
 
-    public override void OnInteractDown(GameObject subject)
+    public override void OnEnter(GameObject subject)
     {
         _holdTimeElapsed = 0f;
     }
 
-    public override void OnInteractUp(GameObject subject)
+    public override void OnExit(GameObject subject)
     {
+        _holdTimeElapsed = 0f;
+    }
+}
 
+public class ButtonProptSystem : MonoBehaviour
+{
+    private static ButtonProptSystem _instance;
+    public GameObject ButtonProptGameObject { get; }
+
+    private void Awake()
+    {
+        if (_instance == null)
+            Debug.LogWarning("More then two ButtonPropt Scripts are present.");
+
+        _instance = this;
+    }
+
+    public static void Show()
+    {
     }
 }
