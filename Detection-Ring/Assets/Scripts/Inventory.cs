@@ -4,17 +4,58 @@ using UnityEngine;
 
 public class Inventory : MonoBehaviour
 {
-    [SerializeField] Transform _handTransform;
-    [SerializeField] Tool _main;
+    [SerializeField] private IHandheldItem _primaryHandheldItem;
 
-    public Transform HandTransform => _handTransform;
+    private HandheldItemPlayerManager _itemManager;
+    [SerializeField] private HandheldItemControllerForPlayer[] _handheldItems = new HandheldItemControllerForPlayer[2];
+    [SerializeField] private HandheldItemControllerForPlayer _currentlyHeldItem;
+    private int _currentlyHeldItemIndex = 0;
 
-    public void PickUp(Tool tool)
+    private void Awake()
     {
-        if (tool == null)
-            return;
+        _itemManager = GetComponentInChildren<HandheldItemPlayerManager>();
+    }
 
-        _main = tool;
-        _main.OnSelectedAsMain(this);
+    private void Start()
+    {
+        ChangeHeldItemTo(_currentlyHeldItemIndex);
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Tab))
+            CycleHeldItemsForwards();
+    }
+
+    public void ChangeHeldItemTo(int index)
+    {
+        _currentlyHeldItemIndex = index;
+
+        if (_handheldItems[_currentlyHeldItemIndex] != null)
+        {
+            _currentlyHeldItem = _handheldItems[_currentlyHeldItemIndex];
+            _itemManager.Equip(_currentlyHeldItem);
+        }
+    }
+
+    public void CycleHeldItemsForwards()
+    {
+        for (int i = _currentlyHeldItemIndex + 1; i < _handheldItems.Length; i++)
+        {
+            if (_handheldItems[i] == null)
+                continue;
+
+            ChangeHeldItemTo(i);
+            return;
+        }
+
+        for (int i = 0; i < _currentlyHeldItemIndex; i++)
+        {
+            if (_handheldItems[i] == null)
+                continue;
+
+            ChangeHeldItemTo(i);
+            return;
+        }
     }
 }

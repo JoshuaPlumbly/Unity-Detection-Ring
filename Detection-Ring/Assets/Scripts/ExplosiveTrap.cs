@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ExplosiveTrap : Explosive
+public class ExplosiveTrap : ExplosiveDevice
 {
     [SerializeField] private Tripwire _tripwire;
 

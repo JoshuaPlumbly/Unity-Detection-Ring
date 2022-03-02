@@ -2,9 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class LandMine : Explosive
+public class LandMine : MonoBehaviour
 {
+    [SerializeField] private Explostion _explostion;
     [SerializeField] private DisruptableDeviceManager _disruptable;
+    [SerializeField] private GameObject _explostionEffect;
 
     private Collider _triggerZone;
 
@@ -15,20 +17,25 @@ public class LandMine : Explosive
 
     private void OnEnable()
     {
-        _disruptable.OnStatusChanged += OnStausUpdated;
+        _disruptable.OnStatusChanged += SetProximitySensorStatus;
     }
 
     private void OnDisable()
     {
-        _disruptable.OnStatusChanged -= OnStausUpdated;
+        _disruptable.OnStatusChanged -= SetProximitySensorStatus;
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        Explode();
+        _explostion.Explode(transform.position);
+        
+        if (_explostionEffect!=null) 
+            Instantiate(_explostionEffect, transform.position, Quaternion.Euler(Vector3.up));
+        
+        Destroy(gameObject);
     }
 
-    public void OnStausUpdated(DeviceStatus status)
+    public void SetProximitySensorStatus(DeviceStatus status)
     {
         _triggerZone.enabled = status == DeviceStatus.Operating;
     }

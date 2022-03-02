@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
-public class ProximityMine : Explosive
+public class ProximityMine : ExplosiveDevice
 {
     [SerializeField] private float _angleRange;
 

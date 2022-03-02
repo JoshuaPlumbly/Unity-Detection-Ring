@@ -372,10 +372,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5a445afa4bc1f4140ab93010ffd7789a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _damage: 110
-  _range: 9
-  _explosionEffect: {fileID: 476850308339887402, guid: ba8e4705206b26c4da8a0cffa40ff9f1, type: 3}
+  _explostion:
+    _damage: 100
+    _force: 700
+    _range: 9
   _disruptable: {fileID: 601196915}
+  _explostionEffect: {fileID: 476850308339887402, guid: ba8e4705206b26c4da8a0cffa40ff9f1, type: 3}
 --- !u!135 &9066099590530510176
 SphereCollider:
   m_ObjectHideFlags: 0

@@ -6,7 +6,7 @@ using UnityEngine;
 public class ProximitySensorB : MonoBehaviour
 {
     [Header("Battery")]
-    [SerializeField] Capacity _batteryPower = new Capacity(120f, 120f);
+    [SerializeField] Energy _batteryPower = new Energy(120f, 120f);
     [SerializeField] float _batteryConsumptionPerSecound = 1f;
 
     [Header("Detection")]

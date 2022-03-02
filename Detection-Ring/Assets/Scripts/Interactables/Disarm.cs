@@ -34,11 +34,24 @@ public class Disarm : Interactable
     public override void OnEnter(GameObject subject)
     {
         _holdTimeElapsed = 0f;
+        InteractPrompt[] prompts = FindObjectsOfType<InteractPrompt>();
+
+        for (int i = 0; i < prompts.Length; i++)
+        {
+            prompts[i].TextPrompt(PromtText);
+        }
     }
 
     public override void OnExit(GameObject subject)
     {
         _holdTimeElapsed = 0f;
+
+        InteractPrompt[] prompts = FindObjectsOfType<InteractPrompt>();
+
+        for (int i = 0; i < prompts.Length; i++)
+        {
+            prompts[i].TextPrompt(string.Empty);
+        }
     }
 }
 

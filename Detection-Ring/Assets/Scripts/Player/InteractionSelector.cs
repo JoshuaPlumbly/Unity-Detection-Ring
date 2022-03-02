@@ -2,48 +2,43 @@
 
 public class InteractionSelector : MonoBehaviour, ISelector<Interactable>
 {
-    [SerializeField, Min(0)] float _reach = 1.5f;
-    [SerializeField, Min(0)] float _casualReach = 1f;
-    [SerializeField, Range(-1f, 1f)] float _threshold = 0.95f;
+    [SerializeField, Min(0f)] float _reach = 1.8f;
+    [SerializeField, Min(0f)] float _casualReach = 1.4f;
+    [SerializeField, Range(0f, 180f)] float _threshold = 25f;
 
     private Interactable _selected;
-
-    public Interactable GetDirectlyInsight(Ray ray)
-    {
-        if (Physics.Raycast(ray, out RaycastHit hit))
-        {
-            if (hit.transform.TryGetComponent(out Interactable interactable))
-            {
-                return interactable;
-            }
-        }
-
-        return null;
-    }
 
     public Ray CreateRay()
     {
         Transform camTransform = CameraManager.Current.transform;
         Vector3 cameraPosition = camTransform.position;
-        Vector3 cameraDirection = Vector3.Normalize(camTransform.forward);
+        Vector3 cameraDirection = camTransform.forward;
         return new Ray(cameraPosition, cameraDirection);
     }
 
-    public void Check()
+    private bool SelectFromRay(Ray ray)
     {
-        Transform camTransform = CameraManager.Current.transform;
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            if (hit.transform.TryGetComponent(out Interactable interactable))
+            {
+                if (!WithinReach(interactable))
+                    return false;
 
+                _selected = interactable;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void SelectNextBestPossibleInteractable(Ray ray)
+    {
         Vector3 position = transform.position;
-        Ray ray = CreateRay();
-
-        _selected = GetDirectlyInsight(ray);
-
-        if (_selected != null)
-            return;
-
         Collider[] colliders = Physics.OverlapSphere(position, _reach);
-        Smallest<Interactable> nearestAngle = new Smallest<Interactable>(null);
-        Smallest<Interactable> nearestPosition = new Smallest<Interactable>(null);
+        Smallest<Interactable> smallestAngle = new Smallest<Interactable>(null);
+        Smallest<Interactable> smallestDistance = new Smallest<Interactable>(null);
 
         for (int i = 0; i < colliders.Length; i++)
         {
@@ -52,34 +47,55 @@ public class InteractionSelector : MonoBehaviour, ISelector<Interactable>
                 if (interactable.Ignore)
                     continue;
 
-                Vector3 collidersPosition = colliders[i].transform.position;
+                Vector3 interactablePosition = colliders[i].transform.position;
+                Vector3 vectorToInteractable = interactablePosition - ray.origin;
+                float distanceToInteractable = Mathf.Abs(vectorToInteractable.magnitude);
+                float angleFromDirection = Vector3.Angle(vectorToInteractable, ray.origin);
 
-                // Get interactable with the neastest to the center of screen.
-                Vector3 toOrigin = Vector3.Normalize(collidersPosition - ray.origin);
-                float angleToOrigin = Vector3.Dot(toOrigin, ray.direction);
+                CompareAngle(angleFromDirection, distanceToInteractable, interactable, smallestAngle);
 
-                nearestAngle.Add(interactable, angleToOrigin);
-
-                if (_selected != null)
+                if (smallestAngle.GetItem() != null)
                     continue;
-
-                GetClosestToPosition(position, nearestPosition, interactable, collidersPosition);
+                
+                CompareDistance(distanceToInteractable, interactable, smallestDistance);
             }
         }
 
+        _selected = smallestAngle.GetItem();
+
+        if (_selected == null)
+            _selected = smallestDistance.GetItem();
     }
 
-    private void GetClosestToPosition(Vector3 position, Smallest<Interactable> nearestPosition, Interactable interactable, Vector3 collidersPosition)
+    private void CompareAngle(float angle, float distance, Interactable interactable, Smallest<Interactable> smallestAngle)
     {
-        float distanceToPlayer = Vector3.Distance(collidersPosition, position);
+        if (angle <= _threshold && distance <= _reach)
+            smallestAngle.Add(interactable, angle);
+    }
 
-        if (distanceToPlayer <= _casualReach)
-            nearestPosition.Add(interactable, distanceToPlayer);
+    private void CompareDistance(float distance, Interactable interactable, Smallest<Interactable> smallestDistance)
+    {
+        if (distance <= _casualReach)
+            smallestDistance.Add(interactable, distance);
     }
 
     public bool WithinReach(Interactable interactable)
     {
+        if (interactable == null)
+            return false;
+
         return Vector3.Distance(interactable.transform.position, transform.position) < _reach;
+    }
+
+    public void Check()
+    {
+        _selected = null;
+        Ray ray = CreateRay();
+
+        SelectFromRay(ray);
+        
+        if (_selected == null)
+            SelectNextBestPossibleInteractable(ray);
     }
 
     Interactable ISelector<Interactable>.GetSelection()

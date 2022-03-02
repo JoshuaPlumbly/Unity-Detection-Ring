@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody), typeof(Interactable))]
-public class ThrowingItem : Tool
+public class ThrowingItem : MonoBehaviour, IHandheldItem
 {
     [SerializeField] private Rigidbody _rigidBody;
     [SerializeField] private float _throwForce;
@@ -20,13 +20,7 @@ public class ThrowingItem : Tool
         _trailRenderer.emitting = false;
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Mouse0))
-            Launch();
-    }
-
-    public void Launch()
+    public void Use()
     {
         if (!_isHeld)
             return;
@@ -45,11 +39,11 @@ public class ThrowingItem : Tool
         if (_trailRenderer != null)
         {
             _trailRenderer.emitting = true;
-            StartCoroutine(RunWhenStill(() => _trailRenderer.emitting = false));
+            StartCoroutine(WaitUntillStationery(() => _trailRenderer.emitting = false));
         }
     }
 
-    public override void OnSelectedAsMain(Inventory inventory)
+    public void Start()
     {
         if (_trailRenderer != null)
         {
@@ -60,12 +54,11 @@ public class ThrowingItem : Tool
         _intractable.Ignore = true;
 
         _rigidBody.isKinematic = true;
-        _rigidBody.transform.parent = inventory.HandTransform;
         _rigidBody.transform.localPosition = Vector3.zero;
         _isHeld = true;
     }
 
-    private IEnumerator RunWhenStill(System.Action callback, float timeStilFor = 1f)
+    private IEnumerator WaitUntillStationery(System.Action callback, float timeStilFor = 1f)
     {
         bool isStill = false;
         float t = 0f;
@@ -85,6 +78,11 @@ public class ThrowingItem : Tool
         }
 
         callback();
+    }
+
+    public GameObject Prefab()
+    {
+        return gameObject;
     }
 }
 
