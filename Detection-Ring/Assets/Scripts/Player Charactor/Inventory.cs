@@ -7,8 +7,8 @@ public class Inventory : MonoBehaviour
     [SerializeField] private IHandheldItem _primaryHandheldItem;
 
     private HandheldItemPlayerManager _itemManager;
-    [SerializeField] private HandheldItemControllerForPlayer[] _handheldItems = new HandheldItemControllerForPlayer[2];
-    [SerializeField] private HandheldItemControllerForPlayer _currentlyHeldItem;
+    [SerializeField] private HeldItemPlayerHandler[] _handheldItems = new HeldItemPlayerHandler[2];
+    [SerializeField] private HeldItemPlayerHandler _currentlyHeldItem;
     private int _currentlyHeldItemIndex = 0;
 
     private void Awake()

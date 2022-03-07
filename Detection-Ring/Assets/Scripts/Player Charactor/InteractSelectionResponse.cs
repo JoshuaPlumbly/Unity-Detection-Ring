@@ -2,19 +2,27 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(PlayerManager))]
 internal class InteractSelectionResponse : MonoBehaviour, IStateMachine<Interactable>
 {
     [SerializeField] public Interactable _selected;
 
+    private PlayerManager _playerManager;
+
+    private void Awake()
+    {
+        _playerManager = GetComponent<PlayerManager>();
+    }
+
     public void Enter(Interactable interactable)
     {
         if (_selected != null)
-            _selected.OnExit(gameObject);
+            _selected.OnExit(_playerManager);
 
         _selected = interactable;
 
         if (_selected != null)
-            _selected.OnEnter(gameObject);
+            _selected.OnEnter(_playerManager);
     }
 
     public void Exit()
@@ -22,7 +30,7 @@ internal class InteractSelectionResponse : MonoBehaviour, IStateMachine<Interact
         if (_selected == null)
             return;
 
-        _selected.OnExit(gameObject);
+        _selected.OnExit(_playerManager);
         _selected = null;
     }
 
@@ -31,6 +39,6 @@ internal class InteractSelectionResponse : MonoBehaviour, IStateMachine<Interact
         if (_selected == null)
             return;
 
-        _selected.OnUpdate(gameObject);
+        _selected.OnUpdate(_playerManager);
     }
 }

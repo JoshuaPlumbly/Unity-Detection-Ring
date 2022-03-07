@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [RequireComponent(typeof(IHandheldItem))]
-public class HandheldItemControllerForPlayer : MonoBehaviour
+public class HeldItemPlayerHandler : MonoBehaviour
 {
     [SerializeField] private IHandheldItem _handheldItem;
 

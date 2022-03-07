@@ -4,16 +4,16 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(CameraSwitcher), typeof(IStateMachine<Interactable>))]
+[RequireComponent(typeof(CameraSwitcher), typeof(InteractSelectionResponse))]
 public class InteractionHandler : MonoBehaviour
 {
     public Interactable _selected;
-    private IStateMachine<Interactable> _selectionResponse;
+    private InteractSelectionResponse _selectionResponse;
     private ISelector<Interactable> _selector;
 
     private void Awake()
     {
-        _selectionResponse = GetComponent<IStateMachine<Interactable>>();
+        _selectionResponse = GetComponent<InteractSelectionResponse>();
         _selector = GetComponent<ISelector<Interactable>>();
     }
 
@@ -33,15 +33,5 @@ public class InteractionHandler : MonoBehaviour
             _selected = interactable;
             _selectionResponse.Enter(_selected);
         }
-    }
-
-    private void SelectInteractable(Interactable interactable)
-    {
-        if (_selected == interactable)
-            return;
-
-        _selected.OnExit(gameObject);
-        _selected = interactable;
-        _selected.OnEnter(gameObject);
     }
 }

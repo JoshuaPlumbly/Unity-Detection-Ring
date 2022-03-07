@@ -2,7 +2,7 @@
 
 public interface IState
 {
-    public void OnEnter(GameObject subject);
-    public void OnExit(GameObject subject);
-    public void OnUpdate(GameObject subject);
+    public void OnEnter();
+    public void OnExit();
+    public void OnUpdate();
 }

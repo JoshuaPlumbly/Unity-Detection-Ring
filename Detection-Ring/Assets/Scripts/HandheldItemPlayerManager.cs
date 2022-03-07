@@ -4,40 +4,35 @@ public class HandheldItemPlayerManager : MonoBehaviour
 {
     [SerializeField] private Transform _heldItemTransform;
 
-    private HandheldItemControllerForPlayer _currentItem;
-    private GameObject _currentItemInstance;
+    private HeldItemPlayerHandler _currentItem;
+    private GameObject _currentHeldItemGameObject;
 
-    public void Equip(HandheldItemControllerForPlayer handheldItem)
+    public void Equip(HeldItemPlayerHandler newHeldItem)
     {
-        UnEquipAndDestroy();
+        UnEquip();
 
-        if (handheldItem == null)
+        if (newHeldItem == null)
             return;
 
-        _currentItemInstance = Instantiate(handheldItem.gameObject);
+        _currentHeldItemGameObject = newHeldItem.gameObject;
+        _currentHeldItemGameObject.SetActive(true);
 
-        if (_currentItemInstance != null)
+        if (_currentHeldItemGameObject != null)
         {
-            Transform prefabInstanceTransform = _currentItemInstance.transform;
+            Transform prefabInstanceTransform = _currentHeldItemGameObject.transform;
             prefabInstanceTransform.parent = _heldItemTransform;
             prefabInstanceTransform.localPosition = Vector3.zero;
             prefabInstanceTransform.localRotation = Quaternion.identity;
             prefabInstanceTransform.localScale = Vector3.one;
         }
 
-        _currentItem = _currentItemInstance.GetComponent<HandheldItemControllerForPlayer>();
+        _currentItem = newHeldItem;
     }
 
     public void UnEquip()
     {
-        if (_currentItemInstance != null)
-            _currentItemInstance.SetActive(false);
-    }
-
-    public void UnEquipAndDestroy()
-    {
-        if (_currentItemInstance != null)
-            Destroy(_currentItemInstance);
+        if (_currentHeldItemGameObject != null)
+            _currentHeldItemGameObject.SetActive(false);
     }
 
     private void Update()

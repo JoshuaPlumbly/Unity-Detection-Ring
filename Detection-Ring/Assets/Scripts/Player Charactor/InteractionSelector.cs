@@ -44,9 +44,6 @@ public class InteractionSelector : MonoBehaviour, ISelector<Interactable>
         {
             if (colliders[i].TryGetComponent(out Interactable interactable))
             {
-                if (interactable.Ignore)
-                    continue;
-
                 Vector3 interactablePosition = colliders[i].transform.position;
                 Vector3 vectorToInteractable = interactablePosition - ray.origin;
                 float distanceToInteractable = Mathf.Abs(vectorToInteractable.magnitude);

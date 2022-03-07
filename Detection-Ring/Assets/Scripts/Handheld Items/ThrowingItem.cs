@@ -25,8 +25,6 @@ public class ThrowingItem : MonoBehaviour, IHandheldItem
         if (!_isHeld)
             return;
 
-        _intractable.Ignore = false;
-
         Transform cameraTransform = CameraManager.Current.transform;
         Vector3 forceToAdd = cameraTransform.forward * _throwForce;
 
@@ -51,8 +49,6 @@ public class ThrowingItem : MonoBehaviour, IHandheldItem
             _trailRenderer.Clear();
         }
 
-        _intractable.Ignore = true;
-
         _rigidBody.isKinematic = true;
         _rigidBody.transform.localPosition = Vector3.zero;
         _isHeld = true;
@@ -60,16 +56,13 @@ public class ThrowingItem : MonoBehaviour, IHandheldItem
 
     private IEnumerator WaitUntillStationery(System.Action callback, float timeStilFor = 1f)
     {
-        bool isStill = false;
         float t = 0f;
 
         while (true)
         {
-            isStill = _rigidBody.velocity.magnitude < 0.01f;
-
             t += Time.deltaTime;
 
-            if (!isStill)
+            if (_rigidBody.velocity.magnitude > 0.01f)
                 t = 0f;
             else if (t <= timeStilFor)
                 break;

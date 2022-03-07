@@ -8,22 +8,24 @@ public class Disarm : Interactable
     [SerializeField] private GameObject _toRemove;
     [SerializeField] private float _holdDuration;
     [SerializeField] private float _holdTimeElapsed;
+    [SerializeField] string _pomptString => "[E] Defuse Explosive Mine";
 
-    public static event Action<Disarm> OnDisarmed;
+    private InteractPrompt[] _interactPrompt;
 
-    public string PromtText => "Disarm";
+    public override void OnUpdate(PlayerManager subject)
+    {
+        UpdateHeldProgress();
+        UpdateProgressBar();
+    }
 
-    public override void OnUpdate(GameObject subject)
+    private void UpdateHeldProgress()
     {
         if (Input.GetKey(KeyCode.E))
         {
             _holdTimeElapsed += Time.deltaTime;
 
             if (_holdTimeElapsed >= _holdDuration)
-            {
-                OnDisarmed?.Invoke(this);
                 _toRemove.SetActive(false);
-            }
         }
         else
         {
@@ -31,44 +33,42 @@ public class Disarm : Interactable
         }
     }
 
-    public override void OnEnter(GameObject subject)
+    public override void OnEnter(PlayerManager subject)
     {
         _holdTimeElapsed = 0f;
-        InteractPrompt[] prompts = FindObjectsOfType<InteractPrompt>();
+        _interactPrompt = FindObjectsOfType<InteractPrompt>();
 
-        for (int i = 0; i < prompts.Length; i++)
-        {
-            prompts[i].TextPrompt(PromtText);
-        }
+        SetTextPrompt(_pomptString);
     }
 
-    public override void OnExit(GameObject subject)
+    public override void OnExit(PlayerManager subject)
     {
         _holdTimeElapsed = 0f;
 
-        InteractPrompt[] prompts = FindObjectsOfType<InteractPrompt>();
-
-        for (int i = 0; i < prompts.Length; i++)
-        {
-            prompts[i].TextPrompt(string.Empty);
-        }
-    }
-}
-
-public class ButtonProptSystem : MonoBehaviour
-{
-    private static ButtonProptSystem _instance;
-    public GameObject ButtonProptGameObject { get; }
-
-    private void Awake()
-    {
-        if (_instance == null)
-            Debug.LogWarning("More then two ButtonPropt Scripts are present.");
-
-        _instance = this;
+        ShowProgressBar(false);
+        SetTextPrompt(string.Empty);
     }
 
-    public static void Show()
+    private void SetTextPrompt(string prompt)
     {
+        for (int i = 0; i < _interactPrompt.Length; i++)
+            _interactPrompt[i].SetTextPrompt(prompt);
+    }
+
+    private void UpdateProgressBar()
+    {
+        for (int i = 0; i < _interactPrompt.Length; i++)
+            _interactPrompt[i].SetProgressBar(GetProgess());
+    }
+
+    public float GetProgess()
+    {
+        return _holdTimeElapsed / _holdDuration;
+    }
+
+    public void ShowProgressBar(bool visable)
+    {
+        for (int i = 0; i < _interactPrompt.Length; i++)
+            _interactPrompt[i].ShowProgressBar(visable);
     }
 }
