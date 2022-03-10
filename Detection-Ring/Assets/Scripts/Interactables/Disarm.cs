@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,7 +7,7 @@ public class Disarm : Interactable
     [SerializeField] private GameObject _toRemove;
     [SerializeField] private float _holdDuration;
     [SerializeField] private float _holdTimeElapsed;
-    [SerializeField] string _pomptString => "[E] Defuse Explosive Mine";
+    [SerializeField] private string _pomptString = "Hold [E] Defuse Explosive Mine";
 
     private InteractPrompt[] _interactPrompt;
 

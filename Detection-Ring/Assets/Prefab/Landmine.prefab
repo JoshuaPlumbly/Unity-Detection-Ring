@@ -197,10 +197,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9fcb42e986e099409a3fc46770f208d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Ignore: 0
   _toRemove: {fileID: 6770290587161447328}
   _holdDuration: 2
   _holdTimeElapsed: 0
+  _pomptString: Hold [E] - Defuse Explosive Mine
 --- !u!135 &6433310104510088515
 SphereCollider:
   m_ObjectHideFlags: 0
