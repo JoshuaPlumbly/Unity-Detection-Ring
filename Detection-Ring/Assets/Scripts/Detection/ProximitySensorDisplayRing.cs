@@ -2,101 +2,74 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(LineRenderer))]
-public class ProximitySensorDisplayRing : MonoBehaviour
+namespace Plumbly.DetectionSystems
 {
-    [SerializeField] private ProximitySensorB _proximitySensor;
-    [SerializeField] private float _radius = 2f;
-    [SerializeField] private float _heightScale = 0.8f;
-    [SerializeField] private AnimationCurve _strengthCurve = new AnimationCurve(new Keyframe(0f,0f), new Keyframe(1f,1f), new Keyframe(2f,1.5f), new Keyframe(5f, 2f));
-
-    private LineRenderer _lineRenderer;
-    private Vector3[] _ringPositions;
-
-    public const float tau = (float)Mathf.PI * 2f;
-
-    private void Awake()
+    [RequireComponent(typeof(LineRenderer))]
+    public class ProximitySensorDisplayRing : MonoBehaviour
     {
-        _lineRenderer = GetComponent<LineRenderer>();
-        _lineRenderer.loop = true;
+        [SerializeField] private ProximitySensor2 _proximitySensor;
+        [SerializeField] private int _segmentCount = 180;
+        [SerializeField] private float _radius = 2f;
+        [SerializeField] private float _heightScale = 0.8f;
+        [SerializeField] private AnimationCurve _strengthCurve = new AnimationCurve(new Keyframe(0f, 0f), new Keyframe(1f, 1f), new Keyframe(2f, 1.5f), new Keyframe(5f, 2f));
 
-        if (_proximitySensor == null)
-            Debug.LogWarning(this + " is missing a proximity refrence.");
-    }
+        private LineRenderer _lineRenderer;
+        private Vector3[] _ringPositions;
+        private float[] _proximityData = new float[0];
 
-    private void OnEnable()
-    {
-        _proximitySensor.OnSetPower += SetPowerOn;
-        _proximitySensor.OnSetStrengthValues += Refresh;
-    }
+        public const float tau = (float)Mathf.PI * 2f;
 
-    private void OnDisable()
-    {
-        _proximitySensor.OnSetPower -= SetPowerOn;
-        _proximitySensor.OnSetStrengthValues -= Refresh;
-
-        _lineRenderer.enabled = false;
-    }
-
-    public void SetPowerOn(bool isActive)
-    {
-        _lineRenderer.enabled = isActive;
-    }
-
-    private void UpdateAllPositions(float[] nodes)
-    {
-        if (_lineRenderer.positionCount != nodes.Length)
-            _lineRenderer.positionCount = nodes.Length;
-
-        if (_ringPositions == null || _ringPositions.Length != nodes.Length)
-            _ringPositions = new Vector3[nodes.Length];
-
-        _lineRenderer.positionCount = nodes.Length;
-
-        for (int i = 0; i < nodes.Length; i++)
+        private void Awake()
         {
-            float circumferenceProgress = (float)i / nodes.Length;
-            float currentRadian = circumferenceProgress * tau;
+            _ringPositions = PatternGenerator.Ring(_segmentCount, _radius);
+            _lineRenderer = GetComponent<LineRenderer>();
+            _lineRenderer.loop = true;
 
-            float x = Mathf.Sin(currentRadian) * _radius;
-            float z = Mathf.Cos(currentRadian) * _radius;
-            float y = EvaluateYPosition(nodes[i]);
-
-            _ringPositions[i] = new Vector3(x, y, z);
-            _lineRenderer.SetPosition(i, transform.position + _ringPositions[i]);
-        }
-    }
-
-    private Vector3[] GenerateRingVertices(int vertexCount, float radius)
-    {
-        Vector3[] vertices = new Vector3[vertexCount];
-        float radiansPerVertex = (1f / vertexCount) * tau;
-
-        for (int i = 0; i < vertexCount; i++)
-        {
-            float angle = radiansPerVertex * i;
-            vertices[i] = new Vector3(Mathf.Sin(angle) * radius, 0f, Mathf.Cos(angle) * radius);
+            if (_proximitySensor == null)
+                Debug.LogWarning(this + " is missing a proximity refrence.");
         }
 
-        return vertices;
-    }
-
-    private void Refresh(float[] nodes)
-    {
-        _lineRenderer.positionCount = nodes.Length;
-
-        if (_ringPositions == null || _ringPositions.Length != nodes.Length)
-            _ringPositions = GenerateRingVertices(nodes.Length, _radius);
-
-        for (int i = 0; i < nodes.Length; i++)
+        private void OnEnable()
         {
-            _ringPositions[i].y = EvaluateYPosition(nodes[i]);
-            _lineRenderer.SetPosition(i, transform.position + _ringPositions[i]);
+            _proximitySensor.UpdatePowerStatus += OnUpdatePowerStatus;
+            _proximitySensor.UpdateProximityData += OnUpdateProximityData;
         }
-    }
 
-    private float EvaluateYPosition(float y)
-    {
-        return _strengthCurve.Evaluate(y) * _heightScale;
+        private void OnDisable()
+        {
+            _proximitySensor.UpdatePowerStatus -= OnUpdatePowerStatus;
+            _proximitySensor.UpdateProximityData -= OnUpdateProximityData;
+
+            _lineRenderer.enabled = false;
+        }
+
+        public void OnUpdatePowerStatus(bool isActive)
+        {
+            _lineRenderer.enabled = isActive;
+        }
+
+        private void OnUpdateProximityData(float[] proximityData)
+        {
+            _proximityData = proximityData;
+        }
+
+        private void LateUpdate()
+        {
+            _lineRenderer.positionCount = _proximityData.Length;
+
+            if (_ringPositions == null || _ringPositions.Length != _proximityData.Length)
+                _ringPositions = PatternGenerator.Ring(_proximityData.Length, _radius);
+
+            for (int i = 0; i < _proximityData.Length; i++)
+            {
+                _ringPositions[i].y = EvaluateYPosition(_proximityData[i]);
+                _lineRenderer.SetPosition(i, transform.position + _ringPositions[i]);
+            }
+        }
+
+        private float EvaluateYPosition(float y)
+        {
+            return _strengthCurve.Evaluate(y) * _heightScale;
+        }
     }
 }

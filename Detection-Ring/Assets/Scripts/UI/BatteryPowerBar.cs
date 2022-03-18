@@ -1,16 +1,17 @@
-﻿using UnityEngine;
+﻿using Plumbly.DetectionSystems;
+using UnityEngine;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Image))]
 public class BatteryPowerBar : MonoBehaviour
 {
-    [SerializeField] ProximitySensorB _proximitySensor;
+    [SerializeField] ProximitySensor2 _proximitySensor;
     private Image _image;
 
     private void Awake()
     {
         _image = GetComponent<Image>();
-        _proximitySensor.OnChanageInBattery += ChanageFillAmount;
+        _proximitySensor.BatteryLifeUpdated += ChanageFillAmount;
     }
 
     private void ChanageFillAmount(float newFillAmount)

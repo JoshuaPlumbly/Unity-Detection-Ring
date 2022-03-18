@@ -1,67 +1,58 @@
+using Plumbly.CameraScripts;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(FirstPersonCamera), typeof(ThirdPersonCamera), typeof(Health))]
-public class CameraSwitcher : MonoBehaviour
+namespace Plumbly
 {
-    [SerializeField] private bool _inFirstPerson;
-    [SerializeField] private ThirdPersonCamera _thirdPersonCamera;
-    [SerializeField] private FirstPersonCamera _firstPersonCamera;
-
-    public Camera CurrentCamera { get; private set; }
-    public Transform CurrentCameraTr { get; private set; }
-
-    private void OnEnable()
+    [RequireComponent(typeof(Health))]
+    public class CameraSwitcher : MonoBehaviour
     {
-        GetComponent<Health>().OnDeath += HandleOnDeath;
-    }
+        [SerializeField] private bool _startInFirstPerson;
+        [SerializeField] private GameObject  _thirdPersonSystem;
+        [SerializeField] private GameObject _firstPersonSystems;
 
-    private void OnDisable()
-    {
-        GetComponent<Health>().OnDeath -= HandleOnDeath;
-    }
+        public static bool FirstPerson { get; private set; }
 
-    private void Start()
-    {
-        _firstPersonCamera = GetComponent<FirstPersonCamera>();
-        _thirdPersonCamera = GetComponent<ThirdPersonCamera>();
+        private Health _health;
+        private UserInputAction _inputActions;
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
-        SwitchCamera(_inFirstPerson);
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.F))
-            SwitchCamera(!_inFirstPerson);
-    }
-
-    public void SwitchCamera(bool toFirstPerson)
-    {
-        _inFirstPerson = toFirstPerson;
-
-        if (toFirstPerson)
+        private void Start()
         {
-            _thirdPersonCamera.OnSwitchedAwayFrom();
-            _thirdPersonCamera.enabled = false;
-            _firstPersonCamera.enabled = true;
-            _firstPersonCamera.OnSwitchedTo();
+            SwitchCamera(_startInFirstPerson);
         }
-        else
-        {
-            _firstPersonCamera.OnSwitchedAwayFrom();
-            _firstPersonCamera.enabled = false;
-            _thirdPersonCamera.enabled = true;
-            _thirdPersonCamera.OnSwitchedTo();
-        }
-    }
 
-    public void HandleOnDeath()
-    {
-        SwitchCamera(false);
-        _thirdPersonCamera.enabled = false;
+        private void OnEnable()
+        {
+            _inputActions = SingletonUserControls.Get();
+            _inputActions.PlayerActions.ToggleCamera.started += CyclyeCamera;
+            _health = GetComponent<Health>();
+            _health.Died += Died;
+        }
+
+        private void OnDisable()
+        {
+            _inputActions.PlayerActions.ToggleCamera.started -= CyclyeCamera;
+            _health.Died -= Died;
+        }
+
+        private void CyclyeCamera(InputAction.CallbackContext obj)
+        {
+            SwitchCamera(!FirstPerson);
+        }
+
+        private void SwitchCamera(bool toFirstPerson)
+        {
+            FirstPerson = toFirstPerson;
+            _firstPersonSystems.SetActive(toFirstPerson);
+            _thirdPersonSystem.SetActive(!toFirstPerson);
+        }
+
+        private void Died()
+        {
+            SwitchCamera(false);
+        }
     }
 }

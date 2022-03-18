@@ -3,42 +3,58 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ProximitySensorDisplayHUD : MonoBehaviour
+namespace Plumbly.DetectionSystems
 {
-    [SerializeField] private GameObject _RadarParent;
-    [SerializeField] private Transform _RadarTranform;
-    [SerializeField] private ProximitySensorB _proximitySensor;
-    [SerializeField] private Material _radarMaterial;
-
-    private void OnEnable()
+    public class ProximitySensorDisplayHUD : MonoBehaviour
     {
-        UpdateShader(new float[1000]);
+        [SerializeField] private GameObject _RadarParent;
+        [SerializeField] private Transform _RadarTranform;
+        [SerializeField] private ProximitySensor2 _proximitySensor;
+        [SerializeField] private Material _radarMaterial;
 
-        _proximitySensor.OnSetStrengthValues += UpdateShader;
-        _proximitySensor.OnSetPower += Power;
-    }
+        private Camera _camera;
 
-    private void OnDisable()
-    {
-        _proximitySensor.OnSetStrengthValues -= UpdateShader;
-        _proximitySensor.OnSetPower -= Power;
-    }
+        private void Awake()
+        {
+            UpdateShader(new float[1000]);
+        }
 
-    private void Power(bool on)
-    {
-        UpdateShader(new float[1000]);
-        _RadarParent.SetActive(on);
-    }
+        private void OnEnable()
+        {
+            _proximitySensor.UpdateProximityData += UpdateShader;
+            _proximitySensor.UpdatePowerStatus += Power;
 
-    private void Update()
-    {
-        float z = CameraManager.Current.transform.eulerAngles.y;
-        _RadarTranform.rotation = Quaternion.Euler(0f, 0f, z);
-    }
+            _camera = Camera.main;
 
-    private void UpdateShader(float[] nodes)
-    {
-        _radarMaterial.SetFloatArray("_Segments", nodes);
-        _radarMaterial.SetInt("_SegmentsCount", nodes.Length);
+        }
+
+        private void OnDisable()
+        {
+            _proximitySensor.UpdateProximityData -= UpdateShader;
+            _proximitySensor.UpdatePowerStatus -= Power;
+        }
+
+        private void Power(bool on)
+        {
+            UpdateShader(new float[1000]);
+            _RadarParent.SetActive(on);
+        }
+
+        private void Update()
+        {
+            Camera camera = Camera.main;
+
+            if (camera != null)
+                return;
+
+            float z = camera.transform.eulerAngles.y;
+            _RadarTranform.rotation = Quaternion.Euler(0f, 0f, z);
+        }
+
+        private void UpdateShader(float[] nodes)
+        {
+            _radarMaterial.SetFloatArray("_Segments", nodes);
+            _radarMaterial.SetInt("_SegmentsCount", nodes.Length);
+        }
     }
 }

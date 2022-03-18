@@ -3,30 +3,39 @@
 [System.Serializable]
 public class Energy
 {
-    [SerializeField] float _limit;
-    [SerializeField] float _currentAmount;
+    [SerializeField] float _currentCapacity;
+    [SerializeField] float _maximumCapacity;
 
-    public float Amount => _currentAmount;
-    public float MaximumAmount => _limit;
-
-    public float CurrentOverMaximumValue() => _currentAmount / _limit;
-
-    public Energy(float amount, float maximumAmount)
+    public Energy(float currentCapacity, float maximumCapacity)
     {
-        _currentAmount = amount;
-        _limit = maximumAmount;
+        _currentCapacity = currentCapacity;
+        _maximumCapacity = maximumCapacity;
     }
 
-    public float Extract(float request)
+    public float CurrentCapacity => _currentCapacity;
+    public float MaximumAmount => _maximumCapacity;
+
+    public float CurrentCapacityNormalize() => _currentCapacity / _maximumCapacity;
+
+    public void Replenish(float energyToReplenish)
     {
-        float result = Mathf.Min(request, _currentAmount);
-        _currentAmount = Mathf.Max(_currentAmount - request, 0f);
-        return result;
+        _currentCapacity += energyToReplenish;
+        _currentCapacity = (_currentCapacity > _maximumCapacity) ? _maximumCapacity : _currentCapacity;
     }
 
-    public void Replenish(float replenishAmount)
+    public bool Consume(float energyToConsume)
     {
-        _currentAmount += replenishAmount;
-        _currentAmount = (_currentAmount > _limit) ? _limit : _currentAmount;
+        if (_currentCapacity < energyToConsume)
+            return false;
+
+        Drain(energyToConsume);
+        return true;
+    }
+
+    public float Drain(float energyToDrain)
+    {
+        float eneryUsed = Mathf.Min(energyToDrain, _currentCapacity);
+        _currentCapacity = Mathf.Max(_currentCapacity - energyToDrain, 0f);
+        return eneryUsed;
     }
 }

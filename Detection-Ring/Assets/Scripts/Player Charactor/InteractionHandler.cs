@@ -4,34 +4,39 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent(typeof(CameraSwitcher), typeof(InteractSelectionResponse))]
-public class InteractionHandler : MonoBehaviour
+namespace Plumbly.Interactables
 {
-    public Interactable _selected;
-    private InteractSelectionResponse _selectionResponse;
-    private ISelector<Interactable> _selector;
-
-    private void Awake()
+    [RequireComponent(typeof(InteractSelectionResponse), typeof(ISelector<Interactable>))]
+    public class InteractionHandler : MonoBehaviour
     {
-        _selectionResponse = GetComponent<InteractSelectionResponse>();
-        _selector = GetComponent<ISelector<Interactable>>();
-    }
+        [SerializeField] private PlayerManager _playerManager;
 
-    private void Start()
-    {
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-    }
+        public Interactable _selected;
+        private InteractSelectionResponse _selectionResponse;
+        private ISelector<Interactable> _selector;
 
-    private void Update()
-    {
-        _selector.Check();
-        Interactable interactable = _selector.GetSelection();
-
-        if (interactable != _selected)
+        private void Awake()
         {
-            _selected = interactable;
-            _selectionResponse.Enter(_selected);
+            _selectionResponse = GetComponent<InteractSelectionResponse>();
+            _selector = GetComponent<ISelector<Interactable>>();
+        }
+
+        private void Update()
+        {
+            _selector.Check();
+
+            Interactable interactable = _selector.GetSelection();
+
+            if (interactable != _selected)
+            {
+                if (_selected != null)
+                    _selected.OnExit(_playerManager);
+                
+                _selected = interactable;
+                
+                if (_selected != null)
+                    _selected.OnEnter(_playerManager);
+            }
         }
     }
 }

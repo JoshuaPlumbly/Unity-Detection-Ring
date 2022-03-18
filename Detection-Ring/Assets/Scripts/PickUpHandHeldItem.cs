@@ -3,37 +3,39 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PickUpHandHeldItem : Interactable
+namespace Plumbly.Interactables
 {
-    [SerializeField] private string _textPrompt = "Pick up";
-
-    public override void OnUpdate(PlayerManager playerManager)
+    public class PickUpHandHeldItem : Interactable
     {
-        if (Input.GetKey(KeyCode.E))
-            PickUpItem(playerManager);
-    }
+        [SerializeField] private string _textPrompt = "Pick up";
 
-    public override void OnEnter(PlayerManager playerManager)
-    {
-        InteractPrompt[] prompts = FindObjectsOfType<InteractPrompt>();
-
-        for (int i = 0; i < prompts.Length; i++)
+        public override void OnEnter(PlayerManager playerManager)
         {
-            prompts[i].SetTextPrompt(_textPrompt);
+            InteractPrompt[] prompts = FindObjectsOfType<InteractPrompt>();
+
+            for (int i = 0; i < prompts.Length; i++)
+            {
+                prompts[i].SetTextPrompt(_textPrompt);
+            }
+
+            SingletonUserControls.Get().PlayerActions.Activate.started += _ => PickUpItem(playerManager);
         }
-    }
 
-    public override void OnExit(PlayerManager playerManager)
-    {
-        InteractPrompt[] prompts = FindObjectsOfType<InteractPrompt>();
-
-        for (int i = 0; i < prompts.Length; i++)
+        public override void OnExit(PlayerManager playerManager)
         {
-            prompts[i].SetTextPrompt(string.Empty);
+            InteractPrompt[] prompts = FindObjectsOfType<InteractPrompt>();
+
+            for (int i = 0; i < prompts.Length; i++)
+            {
+                prompts[i].SetTextPrompt(string.Empty);
+            }
+
+            SingletonUserControls.Get().PlayerActions.Activate.started += _ => PickUpItem(playerManager);
         }
-    }
-    private void PickUpItem(PlayerManager playerManager)
-    {
-        Inventory inventory = playerManager.GetComponent<Inventory>();
+
+        private void PickUpItem(PlayerManager playerManager)
+        {
+            Inventory inventory = playerManager.GetComponent<Inventory>();
+        }
     }
 }

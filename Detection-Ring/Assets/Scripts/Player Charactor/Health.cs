@@ -10,7 +10,7 @@ public class Health : MonoBehaviour, IDamageable
     [SerializeField] private GameObject _hitEffect;
 
     public event System.Action OnTakeDamage;
-    public event System.Action OnDeath;
+    public event System.Action Died;
 
     public int GetHealth() => _hitPoints;
     public int GetMaxHealth() => _maxHitPoints;
@@ -25,7 +25,7 @@ public class Health : MonoBehaviour, IDamageable
         if (_hitPoints <= 0)
         {
             Death();
-            OnDeath?.Invoke();
+            Died?.Invoke();
         }
     }
 

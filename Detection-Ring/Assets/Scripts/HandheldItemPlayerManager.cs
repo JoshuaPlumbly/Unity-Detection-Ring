@@ -1,43 +1,46 @@
 ﻿using UnityEngine;
 
-public class HandheldItemPlayerManager : MonoBehaviour
+namespace Plumbly
 {
-    [SerializeField] private Transform _heldItemTransform;
-
-    private HeldItemPlayerHandler _currentItem;
-    private GameObject _currentHeldItemGameObject;
-
-    public void Equip(HeldItemPlayerHandler newHeldItem)
+    public class HandheldItemPlayerManager : MonoBehaviour
     {
-        UnEquip();
+        [SerializeField] private Transform _heldItemTransform;
 
-        if (newHeldItem == null)
-            return;
+        private HeldItemPlayerHandler _currentItem;
+        private GameObject _currentHeldItemGameObject;
 
-        _currentHeldItemGameObject = newHeldItem.gameObject;
-        _currentHeldItemGameObject.SetActive(true);
-
-        if (_currentHeldItemGameObject != null)
+        public void Equip(HeldItemPlayerHandler newHeldItem)
         {
-            Transform prefabInstanceTransform = _currentHeldItemGameObject.transform;
-            prefabInstanceTransform.parent = _heldItemTransform;
-            prefabInstanceTransform.localPosition = Vector3.zero;
-            prefabInstanceTransform.localRotation = Quaternion.identity;
-            prefabInstanceTransform.localScale = Vector3.one;
+            UnEquip();
+
+            if (newHeldItem == null)
+                return;
+
+            _currentHeldItemGameObject = newHeldItem.gameObject;
+            _currentHeldItemGameObject.SetActive(true);
+
+            if (_currentHeldItemGameObject != null)
+            {
+                Transform prefabInstanceTransform = _currentHeldItemGameObject.transform;
+                prefabInstanceTransform.parent = _heldItemTransform;
+                prefabInstanceTransform.localPosition = Vector3.zero;
+                prefabInstanceTransform.localRotation = Quaternion.identity;
+                prefabInstanceTransform.localScale = Vector3.one;
+            }
+
+            _currentItem = newHeldItem;
         }
 
-        _currentItem = newHeldItem;
-    }
+        public void UnEquip()
+        {
+            if (_currentHeldItemGameObject != null)
+                _currentHeldItemGameObject.SetActive(false);
+        }
 
-    public void UnEquip()
-    {
-        if (_currentHeldItemGameObject != null)
-            _currentHeldItemGameObject.SetActive(false);
-    }
-
-    private void Update()
-    {
-        if (_currentItem != null)
-            _currentItem.OnUpdate();
+        private void Update()
+        {
+            if (_currentItem != null)
+                _currentItem.OnUpdate();
+        }
     }
 }

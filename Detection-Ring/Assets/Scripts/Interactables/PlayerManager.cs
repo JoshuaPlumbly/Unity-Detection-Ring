@@ -1,6 +1,15 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
-public class PlayerManager : MonoBehaviour
+namespace Plumbly
 {
+    public class PlayerManager : MonoBehaviour
+    {
+        public event Action UpdateTick;
 
+        public void Update()
+        {
+            UpdateTick?.Invoke();
+        }
+    }
 }

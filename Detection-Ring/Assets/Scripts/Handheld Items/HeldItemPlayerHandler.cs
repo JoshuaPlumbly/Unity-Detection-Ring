@@ -1,18 +1,28 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
-[RequireComponent(typeof(IHandheldItem))]
-public class HeldItemPlayerHandler : MonoBehaviour
+namespace Plumbly
 {
-    [SerializeField] private IHandheldItem _handheldItem;
-
-    private void Awake()
+    [RequireComponent(typeof(IHandheldItem))]
+    public class HeldItemPlayerHandler : MonoBehaviour
     {
-        _handheldItem = GetComponent<IHandheldItem>();
-    }
+        [SerializeField] private IHandheldItem _handheldItem;
 
-    public void OnUpdate()
-    {
-        if (Input.GetButtonDown("Fire1"))
-             _handheldItem.Use();
+        private void Awake()
+        {
+            _handheldItem = GetComponent<IHandheldItem>();
+
+            SingletonUserControls.Get().PlayerActions.Fire1.started += _ => _handheldItem.Use();
+        }
+
+        public void Use()
+        {
+            _handheldItem.Use();
+        }
+
+        internal void OnUpdate()
+        {
+
+        }
     }
 }

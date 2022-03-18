@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Plumbly.Interactables;
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody), typeof(Interactable))]
@@ -25,7 +26,7 @@ public class ThrowingItem : MonoBehaviour, IHandheldItem
         if (!_isHeld)
             return;
 
-        Transform cameraTransform = CameraManager.Current.transform;
+        Transform cameraTransform = Camera.current.transform;
         Vector3 forceToAdd = cameraTransform.forward * _throwForce;
 
         _rigidBody.transform.parent = null;

@@ -2,43 +2,38 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(PlayerManager))]
-internal class InteractSelectionResponse : MonoBehaviour, IStateMachine<Interactable>
+namespace Plumbly.Interactables
 {
-    [SerializeField] public Interactable _selected;
-
-    private PlayerManager _playerManager;
-
-    private void Awake()
+    [RequireComponent(typeof(PlayerManager))]
+    internal class InteractSelectionResponse : MonoBehaviour, IStateMachine<Interactable>
     {
-        _playerManager = GetComponent<PlayerManager>();
-    }
+        [SerializeField] public Interactable _selected;
 
-    public void Enter(Interactable interactable)
-    {
-        if (_selected != null)
+        private PlayerManager _playerManager;
+
+        private void Awake()
+        {
+            _playerManager = GetComponent<PlayerManager>();
+        }
+
+        public void Enter(Interactable interactable)
+        {
+            if (_selected != null)
+                _selected.OnExit(_playerManager);
+
+            _selected = interactable;
+
+            if (_selected != null)
+                _selected.OnEnter(_playerManager);
+        }
+
+        public void Exit()
+        {
+            if (_selected == null)
+                return;
+
             _selected.OnExit(_playerManager);
-
-        _selected = interactable;
-
-        if (_selected != null)
-            _selected.OnEnter(_playerManager);
-    }
-
-    public void Exit()
-    {
-        if (_selected == null)
-            return;
-
-        _selected.OnExit(_playerManager);
-        _selected = null;
-    }
-
-    private void Update()
-    {
-        if (_selected == null)
-            return;
-
-        _selected.OnUpdate(_playerManager);
+            _selected = null;
+        }
     }
 }

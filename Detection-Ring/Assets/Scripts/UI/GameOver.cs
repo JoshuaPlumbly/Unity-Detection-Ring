@@ -13,7 +13,7 @@ public class GameOver : MonoBehaviour
 
     private void Awake()
     {
-        _health.OnDeath += RunDisplayGameOver;
+        _health.Died += RunDisplayGameOver;
     }
 
     private void RunDisplayGameOver()

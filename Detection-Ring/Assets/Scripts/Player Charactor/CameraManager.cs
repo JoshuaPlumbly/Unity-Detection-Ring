@@ -1,28 +1,26 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public static class CameraManager
 {
-    public static IGameCamera CurrentInGameCamera { get; private set; }
+    public static event Action<Camera> SwitchedCamera;
 
-    public static Camera Current
+    public static void SwithCamera(Camera newCamera)
     {
-        get
-        {
-            if (_current == null)
-                _current = Camera.main;
-
-            return _current;
-        }
+        SwitchedCamera?.Invoke(newCamera);
     }
 
-    private static Camera _current = null;
-
-    public static void SwithCamera(IGameCamera newInGameCamera)
+    public static Vector3 GetCameraForward(Camera camera)
     {
-        if (CurrentInGameCamera != null)
-            CurrentInGameCamera.OnSwitchedAwayFrom();
+        Vector3 forwrd = camera.transform.forward;
+        forwrd.y = 0f;
+        return forwrd.normalized;
+    }
 
-        CurrentInGameCamera = newInGameCamera;
-        CurrentInGameCamera.OnSwitchedTo();
+    public static Vector3 GetCameraRight(Camera camera)
+    {
+        Vector3 right = camera.transform.right;
+        right.y = 0f;
+        return right.normalized;
     }
 }
