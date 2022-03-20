@@ -9,21 +9,17 @@ namespace Plumbly.CameraScripts
     {
         [SerializeField] private CinemachineVirtualCamera _aimVirtualCamera;
         [SerializeField] private Transform _followTarget;
-        [SerializeField] private float _yawSensitivity = 1f;
-        [SerializeField] private float _pitchSensitivity = 1f;
+        [SerializeField] private Vector2 _sensitivity = new Vector2(2000f, 2000f);
+        [SerializeField] private Vector2 _acceleration = new Vector2(2000f, 2000f);
         [SerializeField, Range(0f, 0.5f)] private float _rotationSmoothTime = 0.03f;
+
+        private bool _isAimming = false;
+        private Vector2 _rotation = Vector3.zero;
+        private Vector2 _rotationVelociy = Vector2.zero;
 
         private UserInputAction _inputActions;
         private InputAction _aimAction;
         private InputAction _cameraAction;
-
-        private bool _isAimming;
-        private float _yawAngle = 0f;
-        private float _pitchAngle = 0f;
-
-        private Vector2 _rotationDelta = Vector2.zero;
-        private Vector2 _rotationDeltaVelocity = Vector2.zero;
-        
 
         private void Awake()
         {
@@ -60,15 +56,15 @@ namespace Plumbly.CameraScripts
         private void Update()
         {
             float deltaTime = Time.deltaTime;
-            Vector2 input = _cameraAction.ReadValue<Vector2>();
+            Vector2 targetVelociy = _cameraAction.ReadValue<Vector2>() * _sensitivity;
 
-            _rotationDelta = Vector2.SmoothDamp(_rotationDelta, input, ref _rotationDeltaVelocity, _rotationSmoothTime);
+            _rotationVelociy = new Vector2(
+                Mathf.MoveTowards(_rotationVelociy.x, targetVelociy.x, _acceleration.x * deltaTime),
+                Mathf.MoveTowards(_rotationVelociy.y, targetVelociy.y, _acceleration.y * deltaTime));
 
-            _yawAngle += input.x * _yawSensitivity * deltaTime;
-            _pitchAngle += input.y * _pitchSensitivity * deltaTime;
-            _pitchAngle = Mathf.Clamp(_pitchAngle, -90f, 90);
+            _rotation += _rotationVelociy * deltaTime;
 
-            _followTarget.rotation = Quaternion.Euler(_pitchAngle, _yawAngle, 0f);
+            transform.rotation = Quaternion.Euler(_rotation.y, _rotation.x, 0f);
         }
     }
 }
