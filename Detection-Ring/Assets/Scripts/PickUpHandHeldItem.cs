@@ -9,6 +9,8 @@ namespace Plumbly.Interactables
     {
         [SerializeField] private string _textPrompt = "Pick up";
 
+        private PlayerManager _manager;
+
         public override void OnEnter(PlayerManager playerManager)
         {
             InteractPrompt[] prompts = FindObjectsOfType<InteractPrompt>();
@@ -18,10 +20,11 @@ namespace Plumbly.Interactables
                 prompts[i].SetTextPrompt(_textPrompt);
             }
 
+            _manager = playerManager;
             SingletonUserControls.Get().PlayerActions.Activate.started += _ => PickUpItem(playerManager);
         }
 
-        public override void OnExit(PlayerManager playerManager)
+        public override void OnExit()
         {
             InteractPrompt[] prompts = FindObjectsOfType<InteractPrompt>();
 
@@ -30,7 +33,7 @@ namespace Plumbly.Interactables
                 prompts[i].SetTextPrompt(string.Empty);
             }
 
-            SingletonUserControls.Get().PlayerActions.Activate.started += _ => PickUpItem(playerManager);
+            SingletonUserControls.Get().PlayerActions.Activate.started += _ => PickUpItem(_manager);
         }
 
         private void PickUpItem(PlayerManager playerManager)

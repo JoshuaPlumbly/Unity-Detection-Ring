@@ -124,7 +124,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b4e221c1076e1744909b15c1ce9351b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _pomptString: Disarm Explosive Device
+  _pomptString: '[E] Disarm Explosive Device'
   _holdDuration: 2
   _holdTimeElapsed: 0
   _toRemove: {fileID: 6770290587161447328}
@@ -373,6 +373,10 @@ PrefabInstance:
     - target: {fileID: 919132149155446097, guid: 7e1dd177a13673645ab528039cde0143, type: 3}
       propertyPath: m_Name
       value: Landmine
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 7e1dd177a13673645ab528039cde0143, type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7e1dd177a13673645ab528039cde0143, type: 3}

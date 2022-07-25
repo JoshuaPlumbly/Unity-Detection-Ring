@@ -28,9 +28,9 @@ public class LandMine : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         _explostion.Explode(transform.position);
-        
-        if (_explostionEffect!=null) 
-            Instantiate(_explostionEffect, transform.position, Quaternion.Euler(Vector3.up));
+
+        if (_explostionEffect != null)
+            Instantiate(_explostionEffect, transform.position, Quaternion.Euler(-90f, 0f, 0f));
         
         Destroy(gameObject);
     }

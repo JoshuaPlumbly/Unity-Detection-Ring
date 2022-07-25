@@ -65,7 +65,7 @@ namespace Plumbly.Interactables
 
         public Ray CreateRayFromMainCamera()
         {
-            return Camera.main.ScreenPointToRay(new Vector3(0.5f, 0.5f, 0f));
+            return UnityEngine.Camera.main.ScreenPointToRay(new Vector3(0.5f, 0.5f, 0f));
         }
 
         private bool SelectFromRay(Ray ray)

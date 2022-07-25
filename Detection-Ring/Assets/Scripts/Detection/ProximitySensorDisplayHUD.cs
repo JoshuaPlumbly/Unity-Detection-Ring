@@ -12,7 +12,7 @@ namespace Plumbly.DetectionSystems
         [SerializeField] private ProximitySensor2 _proximitySensor;
         [SerializeField] private Material _radarMaterial;
 
-        private Camera _camera;
+        private UnityEngine.Camera _camera;
 
         private void Awake()
         {
@@ -24,7 +24,7 @@ namespace Plumbly.DetectionSystems
             _proximitySensor.UpdateProximityData += UpdateShader;
             _proximitySensor.UpdatePowerStatus += Power;
 
-            _camera = Camera.main;
+            _camera = UnityEngine.Camera.main;
 
         }
 
@@ -42,7 +42,7 @@ namespace Plumbly.DetectionSystems
 
         private void Update()
         {
-            Camera camera = Camera.main;
+            UnityEngine.Camera camera = UnityEngine.Camera.main;
 
             if (camera != null)
                 return;

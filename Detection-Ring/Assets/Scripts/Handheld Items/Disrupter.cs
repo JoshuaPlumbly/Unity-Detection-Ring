@@ -2,17 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Disrupter : MonoBehaviour, IHandheldItem
+public class Disrupter : MonoBehaviour, HandheldImplement
 {
-    [SerializeField] int _loadedAmunitions = 30;
-    [SerializeField] int _unloadedMunitions = 60;
-    [SerializeField] int _loadedCapasity = 30;
+    [SerializeField] Resource _loadedAmmunition = new Resource(08, 08);
+    [SerializeField] Resource _unloadedAmmunition = new Resource(0, int.MaxValue);
     [SerializeField] float _fireRate = 0.1f;
     [SerializeField] float _canFireAfter = float.NegativeInfinity;
     [SerializeField] private AudioSource _audioSource;
     [SerializeField] private float _range = 500f;
 
-    private MunitionsUI _munitionsUI;
+    private MunitionsUI _ammunition;
 
     private void Awake()
     {
@@ -22,13 +21,13 @@ public class Disrupter : MonoBehaviour, IHandheldItem
 
     private void OnEnable()
     {
-        _munitionsUI = FindObjectOfType<MunitionsUI>();
+        _ammunition = FindObjectOfType<MunitionsUI>();
 
 
-        if (_munitionsUI != null)
+        if (_ammunition != null)
         {
-            _munitionsUI.SetLoadedMunitionText(_loadedAmunitions.ToString());
-            _munitionsUI.SetUnloadedMunitionText(_unloadedMunitions.ToString());
+            _ammunition.SetLoadedMunitionText(_loadedAmmunition.CurrentValue.ToString());
+            _ammunition.SetUnloadedMunitionText(_unloadedAmmunition.CurrentValue.ToString());
         }
     }
 
@@ -44,20 +43,20 @@ public class Disrupter : MonoBehaviour, IHandheldItem
 
     public bool AttemptToFire()
     {
-        bool canFire = _loadedAmunitions > 0 && Time.time > _canFireAfter;
+        bool canFire = !_loadedAmmunition.IsEmpty() && Time.time > _canFireAfter;
 
         if (canFire == false)
             return false;
 
         _canFireAfter = Time.time + _fireRate;
-        _loadedAmunitions--;
+        _loadedAmmunition.Subtract(1);
         return true;
     }
     
     private void UpdateLoadedMunitionsUI()
     {
-        if (_munitionsUI != null)
-            _munitionsUI.SetLoadedMunitionText(_loadedAmunitions.ToString());
+        if (_ammunition != null)
+            _ammunition.SetLoadedMunitionText(_loadedAmmunition.CurrentValue.ToString());
     }
 
     private void DisruptDevicesBeingPointedAt()

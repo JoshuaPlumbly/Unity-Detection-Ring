@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public interface IHandheldItem
+public interface HandheldImplement
 {
     void Use();
 }

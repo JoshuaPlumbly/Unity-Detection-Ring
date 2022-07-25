@@ -58,8 +58,8 @@ namespace Plumbly
         #region Movement
         private void Movement(float deltaTime, Vector2 input)
         {
-            Vector3 motion = CameraManager.GetCameraForward(Camera.main) * input.y;
-            motion += CameraManager.GetCameraRight(Camera.main) * input.x;
+            Vector3 motion = CameraManager.GetCameraForward(UnityEngine.Camera.main) * input.y;
+            motion += CameraManager.GetCameraRight(UnityEngine.Camera.main) * input.x;
             motion.y = 0f;
             motion.Normalize();
             motion *= _nomalMoveSpeed * deltaTime;

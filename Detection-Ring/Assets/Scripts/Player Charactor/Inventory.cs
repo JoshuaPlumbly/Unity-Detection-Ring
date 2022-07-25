@@ -6,34 +6,25 @@ namespace Plumbly
 {
     public class Inventory : MonoBehaviour
     {
-        [SerializeField] private IHandheldItem _primaryHandheldItem;
+        [SerializeField] private HandheldImplement _primaryHandheldItem;
 
-        private HandheldItemPlayerManager _itemManager;
-        [SerializeField] private HeldItemPlayerHandler[] _handheldItems = new HeldItemPlayerHandler[2];
-        [SerializeField] private HeldItemPlayerHandler _currentlyHeldItem;
+
+        [SerializeField] private PlayerImplement[] _handheldItems = new PlayerImplement[2];
+        [SerializeField] private PlayerImplement _currentlyHeldItem;
+
         private int _currentlyHeldItemIndex = 0;
+        private HandheldItemPlayerManager _itemManager;
 
         private void Awake()
         {
             _itemManager = GetComponentInChildren<HandheldItemPlayerManager>();
-            SingletonUserControls.Get().PlayerActions.CycleHeldItemsForwards.started += CycleHeldItemsForwards_started;
-        }
-
-        private void CycleHeldItemsForwards_started(UnityEngine.InputSystem.InputAction.CallbackContext obj)
-        {
-            CycleHeldItemsForwards();
+            SingletonUserControls.Get().PlayerActions.CycleHeldItemsForwards.started += _ => CycleHeldItemsForwards();
         }
 
         private void Start()
         {
             ChangeHeldItemTo(_currentlyHeldItemIndex);
         }
-
-        //private void Update()
-        //{
-        //    if (Input.GetKeyDown(KeyCode.Tab))
-        //        CycleHeldItemsForwards();
-        //}
 
         public void ChangeHeldItemTo(int index)
         {

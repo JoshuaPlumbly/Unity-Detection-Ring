@@ -3,7 +3,7 @@ using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody), typeof(Interactable))]
-public class ThrowingItem : MonoBehaviour, IHandheldItem
+public class ThrowingItem : MonoBehaviour, HandheldImplement
 {
     [SerializeField] private Rigidbody _rigidBody;
     [SerializeField] private float _throwForce;
@@ -79,4 +79,3 @@ public class ThrowingItem : MonoBehaviour, IHandheldItem
         return gameObject;
     }
 }
-

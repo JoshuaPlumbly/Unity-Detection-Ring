@@ -6,10 +6,10 @@ namespace Plumbly
     {
         [SerializeField] private Transform _heldItemTransform;
 
-        private HeldItemPlayerHandler _currentItem;
+        private PlayerImplement _currentItem;
         private GameObject _currentHeldItemGameObject;
 
-        public void Equip(HeldItemPlayerHandler newHeldItem)
+        public void Equip(PlayerImplement newHeldItem)
         {
             UnEquip();
 
@@ -35,12 +35,6 @@ namespace Plumbly
         {
             if (_currentHeldItemGameObject != null)
                 _currentHeldItemGameObject.SetActive(false);
-        }
-
-        private void Update()
-        {
-            if (_currentItem != null)
-                _currentItem.OnUpdate();
         }
     }
 }

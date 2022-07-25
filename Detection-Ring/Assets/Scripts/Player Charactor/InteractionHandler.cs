@@ -30,7 +30,7 @@ namespace Plumbly.Interactables
             if (interactable != _selected)
             {
                 if (_selected != null)
-                    _selected.OnExit(_playerManager);
+                    _selected.OnExit();
                 
                 _selected = interactable;
                 

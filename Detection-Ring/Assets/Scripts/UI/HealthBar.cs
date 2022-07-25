@@ -17,7 +17,7 @@ public class HealthBar : MonoBehaviour
 
     private void OnEnable()
     {
-        _healthScaled = _health.HealthDividedByMaxHealth();
+        _healthScaled = _health.GetHealthNormalize();
         SetHealthBar(_healthScaled);
 
         _health.OnTakeDamage += OnTakeDamage;
@@ -30,9 +30,13 @@ public class HealthBar : MonoBehaviour
 
     private void OnTakeDamage()
     {
-        _healthScaled = _health.HealthDividedByMaxHealth();
+        _healthScaled = _health.GetHealthNormalize();
         SetHealthBar(_healthScaled);
+        PlayDamageEffect();
+    }
 
+    private void PlayDamageEffect()
+    {
         if (_damageEffectEnumerator != null)
             StopCoroutine(_damageEffectEnumerator);
 

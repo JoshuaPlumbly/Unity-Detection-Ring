@@ -14,21 +14,9 @@ public class FirstPersonCamera : MonoBehaviour, IGameCamera
 
     protected void Awake()
     {
-        if (!_cameraTransform || !_lookDirectionTransform)
-            Debug.LogWarning(this + " is missing dependencies.");
+        if (!_lookDirectionTransform)
+            Debug.LogWarning(this + " is missing dependencie(s).");
     }
-
-    //private void Update()
-    //{
-    //    float mouseX = Input.GetAxisRaw("Mouse X");
-    //    float mouseY = -Input.GetAxisRaw("Mouse Y");
-
-    //    _yaw += mouseX * _horizontalSensitivity * Time.deltaTime;
-    //    _pitch += mouseY * _verticalSensitivity * Time.deltaTime;
-
-    //    _pitch = Mathf.Clamp(_pitch, -90f, 90f);
-    //    _yaw = _yaw % 360f;
-    //}
 
     private void LateUpdate()
     {

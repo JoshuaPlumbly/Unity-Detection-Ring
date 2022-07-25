@@ -19,7 +19,7 @@ namespace Plumbly.Interactables
         public void Enter(Interactable interactable)
         {
             if (_selected != null)
-                _selected.OnExit(_playerManager);
+                _selected.OnExit();
 
             _selected = interactable;
 
@@ -32,7 +32,7 @@ namespace Plumbly.Interactables
             if (_selected == null)
                 return;
 
-            _selected.OnExit(_playerManager);
+            _selected.OnExit();
             _selected = null;
         }
     }

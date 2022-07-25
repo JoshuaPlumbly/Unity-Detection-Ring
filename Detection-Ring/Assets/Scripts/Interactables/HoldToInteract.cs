@@ -1,5 +1,7 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEngine.InputSystem.InputAction;
 
 namespace Plumbly.Interactables
 {
@@ -9,55 +11,89 @@ namespace Plumbly.Interactables
         [SerializeField] private float _holdDuration;
         [SerializeField] private float _holdTimeElapsed;
 
-        private PlayerManager _manager;
+        private bool _isSelected = false;
+        private InteractPrompt _interactPrompt;
         private UserInputAction _inputActions;
-        private InputAction _interactAction;
-
-        public float GetProgess()
-        {
-            return _holdTimeElapsed / _holdDuration;
-        }
+        private IEnumerator _currentProgressionCoroutine;
 
         public override void OnEnter(PlayerManager manager)
         {
             _inputActions = SingletonUserControls.Get();
-            _inputActions.PlayerActions.Activate.performed += _ => StartProgression();
-            _inputActions.PlayerActions.Activate.canceled += _ => StopProgression();
+            _inputActions.PlayerActions.Activate.started += StartProgression;
+            _inputActions.PlayerActions.Activate.canceled += StopProgression;
 
-            _manager = manager;
+            _interactPrompt = manager.InteractPrompt;
+            _interactPrompt.SetTextPrompt(_pomptString);
 
-            _holdTimeElapsed = 0f;
+            ResetProgress();
+            _isSelected = true;
         }
 
-        public override void OnExit(PlayerManager subject)
+        public override void OnExit()
         {
-            _inputActions.PlayerActions.Activate.performed -= _ => StartProgression();
-            _inputActions.PlayerActions.Activate.canceled -= _ => StopProgression();
-            _manager.UpdateTick -= ContinueProgression;
-
-            StopProgression();
-        }
-
-        private void StartProgression()
-        {
-            _manager.UpdateTick += ContinueProgression;
-        }
-
-        private void ContinueProgression()
-        {
-            _holdTimeElapsed += Time.deltaTime;
-
-            if (_holdTimeElapsed < _holdDuration)
+            if (!_isSelected)
                 return;
 
-            OnExit(_manager);
+            _inputActions.PlayerActions.Activate.started -= StartProgression;
+            _inputActions.PlayerActions.Activate.canceled -= StopProgression;
+
+            EndProgressionCoroutine();
+            _interactPrompt.ShowText(false);
+            _isSelected = false;
+        }
+
+        public float GetProgress()
+        {
+            return _holdTimeElapsed / _holdDuration;
+        }
+
+        public void ResetProgress()
+        {
+            _holdTimeElapsed = 0f;
+            _interactPrompt.SetProgressBar(0f);
+        }
+        
+        private void StartProgression(CallbackContext ctx)
+        {
+            if (_currentProgressionCoroutine != null)
+                StopCoroutine(_currentProgressionCoroutine);
+
+            _currentProgressionCoroutine = ContineProgress();
+            StartCoroutine(_currentProgressionCoroutine);
+        }
+
+        public IEnumerator ContineProgress()
+        {
+            ResetProgress();
+            _interactPrompt.ShowProgressBar(true);
+
+            while (_holdTimeElapsed < _holdDuration)
+            {
+                _holdTimeElapsed += Time.deltaTime;
+                _interactPrompt.SetProgressBar(GetProgress());
+                yield return null;
+            }
+
             Preform();
         }
 
-        private void StopProgression()
+        private void StopProgression(CallbackContext obj)
         {
-            _manager.UpdateTick -= ContinueProgression;
-            _holdTimeElapsed = 0f;
+            EndProgressionCoroutine();
+        }
+
+        private void EndProgressionCoroutine()
+        {
+            if (_currentProgressionCoroutine != null)
+                StopCoroutine(_currentProgressionCoroutine);
+
+            _interactPrompt.ShowProgressBar(false);
+            ResetProgress();
+        }
+
+        private void OnDisable()
+        {
+            OnExit();
         }
 
         protected abstract void Preform();

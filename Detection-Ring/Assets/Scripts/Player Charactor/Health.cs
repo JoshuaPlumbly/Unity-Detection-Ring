@@ -5,24 +5,23 @@ using UnityEngine.Events;
 
 public class Health : MonoBehaviour, IDamageable
 {
-    [SerializeField] private int _hitPoints = 100;
-    [SerializeField] private int _maxHitPoints = 100;
+    [SerializeField] private Resource _hitPoints = new Resource(100, 100);
     [SerializeField] private GameObject _hitEffect;
 
     public event System.Action OnTakeDamage;
     public event System.Action Died;
 
-    public int GetHealth() => _hitPoints;
-    public int GetMaxHealth() => _maxHitPoints;
-    public float HealthDividedByMaxHealth() => (float)_hitPoints / _maxHitPoints;
+    public float GetHealthNormalize()
+    {
+        return _hitPoints.CurrentCapacityNormalize();
+    }
 
     public void TakeDamage(int damage)
     {
-        _hitPoints -= damage;
-        _hitPoints = _hitPoints < 0 ? 0 : _hitPoints;
+        _hitPoints.Subtract(damage);
         OnTakeDamage?.Invoke();
 
-        if (_hitPoints <= 0)
+        if (_hitPoints.IsEmpty())
         {
             Death();
             Died?.Invoke();
@@ -33,7 +32,7 @@ public class Health : MonoBehaviour, IDamageable
     {
         TakeDamage(damage);
 
-        if (_hitPoints <= 0)
+        if (_hitPoints.IsEmpty())
             Instantiate(_hitEffect, hitPoint, Quaternion.FromToRotation(Vector3.forward, hitDirection));
     }
 

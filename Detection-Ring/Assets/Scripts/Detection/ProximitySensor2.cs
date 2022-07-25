@@ -8,7 +8,7 @@ namespace Plumbly.DetectionSystems
     public class ProximitySensor2 : MonoBehaviour
     {
         [Header("Battery")]
-        [SerializeField] private Energy _batteryLife = new Energy(120f, 120f);
+        [SerializeField] private ResourceF _batteryLife = new ResourceF(120f, 120f);
         [SerializeField] private float _batteryConsumptionPerSecound = 1f;
 
         [Header("Detection")]
@@ -25,33 +25,25 @@ namespace Plumbly.DetectionSystems
 
         private void Awake()
         {
-            SingletonUserControls.Get().PlayerActions.UsePassiveItem1.started += UsePassiveItem1_started;
+            SingletonUserControls.Get().PlayerActions.UsePassiveItem1.started += _ => SetPower(!_isPowerOn);
         }
 
-        private void UsePassiveItem1_started(UnityEngine.InputSystem.InputAction.CallbackContext obj)
+        private void OnDisable()
         {
-            SetPower(!_isPowerOn);
+            
         }
 
         void Update()
         {
-            //PlayerInput();
-
             if (!_isPowerOn) return;
 
             BatteryLife();
             PerformProximityScan();
         }
 
-        //private void PlayerInput()
-        //{
-        //    if (Plumbly.PlayerInput.UsePassiveItemFlag1)
-        //        SetPower(!_isPowerOn);
-        //}
-
         private void BatteryLife()
         {
-            if (!_batteryLife.Consume(_batteryConsumptionPerSecound * Time.deltaTime))
+            if (!_batteryLife.TryToSpend(_batteryConsumptionPerSecound * Time.deltaTime))
                 SetPower(false);
 
             float batteryLife = _batteryLife.CurrentCapacityNormalize();

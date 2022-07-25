@@ -1,9 +1,8 @@
 using Cinemachine;
-using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-namespace Plumbly.CameraScripts
+namespace Plumbly.Camera
 {
     public class ThirdPersonCameraHandler : MonoBehaviour
     {
@@ -53,7 +52,7 @@ namespace Plumbly.CameraScripts
             _aimVirtualCamera.gameObject.SetActive(_isAimming);
         }
 
-        private void Update()
+        private void LateUpdate()
         {
             float deltaTime = Time.deltaTime;
             Vector2 targetVelociy = _cameraAction.ReadValue<Vector2>() * _sensitivity;
